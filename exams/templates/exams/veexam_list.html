@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VE Экзамены</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .student-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        .exam-list {
+            display: grid;
+            gap: 20px;
+        }
+        .exam-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        .exam-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .exam-info {
+            display: grid;
+            gap: 10px;
+        }
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            min-width: 180px;
+        }
+        .info-value {
+            color: #333;
+        }
+        .users-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .user-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .exam-image {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .exam-image img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+        }
+        .no-exams {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Предстоящие экзамены</h1>
+        <div class="student-info">
+            {{ full_name }} - Группа: {{ group }}
+        </div>
+        
+        {% if exams %}
+            <div class="exam-list">
+                {% for exam in exams %}
+                    <div class="exam-card">
+                        <div class="exam-title">{{ exam.title }}</div>
+                        <div class="exam-info">
+                            <div class="info-row">
+                                <span class="info-label">Дата проведения:</span>
+                                <span class="info-value">{{ exam.exam_date|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Дата создания записи:</span>
+                                <span class="info-value">{{ exam.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Статус публикации:</span>
+                                <span class="info-value">{% if exam.is_public %}Опубликовано{% else %}Не опубликовано{% endif %}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Записанные студенты:</span>
+                                <div class="info-value">
+                                    <div class="users-list">
+                                        {% for user in exam.users.all %}
+                                            <span class="user-badge">
+                                                {{ user.get_full_name|default:user.username }} ({{ user.email }})
+                                            </span>
+                                        {% empty %}
+                                            <span>Нет записанных студентов</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if exam.image %}
+                                <div class="exam-image">
+                                    <img src="{{ exam.image.url }}" alt="Изображение для {{ exam.title }}">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-exams">
+                Нет опубликованных экзаменов
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
