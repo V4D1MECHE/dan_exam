@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
 from django.db.models import Manager
+from django.core.exceptions import ValidationError
 import uuid
 
 
@@ -74,6 +75,30 @@ class Resume(models.Model):
     
     def get_absolute_url(self):
         return reverse('resume_detail', args=[str(self.id)])
+    
+    def save(self, *args, **kwargs):
+        """Переопределенный метод save для демонстрации"""
+        # Автоматически делаем резюме публичным если заполнено больше 50% полей
+        filled_fields = 0
+        total_fields = 6  # title, photo, city, employment_type, salary_from, summary
+        
+        if self.title:
+            filled_fields += 1
+        if self.photo:
+            filled_fields += 1
+        if self.city:
+            filled_fields += 1
+        if self.employment_type:
+            filled_fields += 1
+        if self.salary_from:
+            filled_fields += 1
+        if self.summary:
+            filled_fields += 1
+            
+        if filled_fields >= 4:  # больше 50%
+            self.is_public = True
+            
+        super().save(*args, **kwargs)
 
 
 class Contact(models.Model):
@@ -160,6 +185,39 @@ class Education(models.Model):
         return f"{self.institution_name} - {self.field_of_study}"
 
 
+class SkillTag(models.Model):
+    """Теги навыков для группировки"""
+    name = models.CharField(max_length=50, unique=True, verbose_name="Название тега")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    color = models.CharField(max_length=7, default='#007bff', verbose_name="Цвет")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Тег навыка"
+        verbose_name_plural = "Теги навыков"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class SkillTagRelation(models.Model):
+    """Промежуточная модель для связи навыков и тегов"""
+    skill = models.ForeignKey('Skill', on_delete=models.CASCADE, verbose_name="Навык")
+    tag = models.ForeignKey(SkillTag, on_delete=models.CASCADE, verbose_name="Тег")
+    relevance = models.IntegerField(default=100, verbose_name="Релевантность")
+    added_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+    
+    class Meta:
+        verbose_name = "Связь навык-тег"
+        verbose_name_plural = "Связи навык-тег"
+        unique_together = ['skill', 'tag']
+        ordering = ['-relevance']
+    
+    def __str__(self):
+        return f"{self.skill.name} - {self.tag.name} ({self.relevance}%)"
+
+
 class Skill(models.Model):
     """Навыки"""
     LEVEL_CHOICES = [
@@ -184,6 +242,7 @@ class Skill(models.Model):
     is_key_skill = models.BooleanField(default=False, verbose_name="Ключевой навык")
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    tags = models.ManyToManyField(SkillTag, through='SkillTagRelation', related_name='skills', verbose_name="Теги")
     
     class Meta:
         verbose_name = "Навык"

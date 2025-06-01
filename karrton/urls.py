@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.resumes import views as resume_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,9 +27,13 @@ urlpatterns = [
     path('auth/', include('django.contrib.auth.urls')),
     
     # Регулярные выражения в URLs
-    re_path(r'^resume/(?P<pk>\d+)/$', 'apps.resumes.views.resume_detail', name='resume_detail_regex'),
-    re_path(r'^resumes/(?P<year>\d{4})/$', 'apps.resumes.views.resumes_by_year', name='resumes_by_year'),
+    re_path(r'^resume/(?P<pk>\d+)/$', resume_views.resume_detail, name='resume_detail_regex'),
+    re_path(r'^resumes/(?P<year>\d{4})/$', resume_views.resumes_by_year, name='resumes_by_year'),
 ]
 
 if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

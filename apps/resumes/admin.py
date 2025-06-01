@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.utils import timezone
 from .models import (
     ResumeTemplate, Resume, Contact, WorkExperience, Education,
-    Skill, Language, Award, Certificate, Recommendation, SharedLink
+    Skill, Language, Award, Certificate, Recommendation, SharedLink,
+    SkillTag, SkillTagRelation
 )
 
 
@@ -306,6 +307,49 @@ class SharedLinkAdmin(admin.ModelAdmin):
         }),
         ('Служебная информация', {
             'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(SkillTag)
+class SkillTagAdmin(admin.ModelAdmin):
+    list_display = ['name', 'color', 'get_skills_count', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['name', 'description']
+    list_display_links = ['name']
+    readonly_fields = ['created_at']
+    
+    @admin.display(description='Количество навыков')
+    def get_skills_count(self, obj):
+        return obj.skills.count()
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'description', 'color')
+        }),
+        ('Служебная информация', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(SkillTagRelation)
+class SkillTagRelationAdmin(admin.ModelAdmin):
+    list_display = ['skill', 'tag', 'relevance', 'added_at']
+    list_filter = ['tag', 'relevance', 'added_at']
+    search_fields = ['skill__name', 'tag__name']
+    list_display_links = ['skill', 'tag']
+    raw_id_fields = ['skill', 'tag']
+    readonly_fields = ['added_at']
+    
+    fieldsets = (
+        ('Связь', {
+            'fields': ('skill', 'tag', 'relevance')
+        }),
+        ('Служебная информация', {
+            'fields': ('added_at',),
             'classes': ('collapse',)
         }),
     )

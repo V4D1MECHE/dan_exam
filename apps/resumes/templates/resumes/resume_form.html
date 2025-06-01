@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Редактировать резюме{% else %}Создать резюме{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if form.instance.pk %}Редактировать резюме{% else %}Создать новое резюме{% endif %}</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="text-danger">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.city.id_for_label }}" class="form-label">{{ form.city.label }}</label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                        <div class="text-danger">{{ form.city.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.employment_type.id_for_label }}" class="form-label">{{ form.employment_type.label }}</label>
+                    {{ form.employment_type }}
+                    {% if form.employment_type.errors %}
+                        <div class="text-danger">{{ form.employment_type.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Зарплата</label>
+                    <div class="row">
+                        <div class="col">
+                            {{ form.salary_from }}
+                            {% if form.salary_from.errors %}
+                                <div class="text-danger">{{ form.salary_from.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            {{ form.salary_to }}
+                            {% if form.salary_to.errors %}
+                                <div class="text-danger">{{ form.salary_to.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                                <div class="text-danger">{{ form.currency.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.photo.id_for_label }}" class="form-label">{{ form.photo.label }}</label>
+                    {{ form.photo }}
+                    {% if form.photo.errors %}
+                        <div class="text-danger">{{ form.photo.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.template.id_for_label }}" class="form-label">{{ form.template.label }}</label>
+                    {{ form.template }}
+                    {% if form.template.errors %}
+                        <div class="text-danger">{{ form.template.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.summary.id_for_label }}" class="form-label">{{ form.summary.label }}</label>
+            {{ form.summary }}
+            {% if form.summary.errors %}
+                <div class="text-danger">{{ form.summary.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <div class="form-check">
+                {{ form.is_public }}
+                <label for="{{ form.is_public.id_for_label }}" class="form-check-label">
+                    {{ form.is_public.label }}
+                </label>
+            </div>
+            {% if form.is_public.errors %}
+                <div class="text-danger">{{ form.is_public.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                {% if form.instance.pk %}Сохранить изменения{% else %}Создать резюме{% endif %}
+            </button>
+            <a href="{% url 'my_resumes' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

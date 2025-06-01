@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить резюме{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Подтверждение удаления</h4>
+                </div>
+                <div class="card-body">
+                    <p>Вы действительно хотите удалить резюме?</p>
+                    <div class="alert alert-warning">
+                        <strong>{{ object.title }}</strong><br>
+                        <small class="text-muted">{{ object.user.get_full_name }}</small>
+                    </div>
+                    <p class="text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Это действие необратимо! Все связанные данные (навыки, опыт работы, образование и т.д.) также будут удалены.
+                    </p>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Да, удалить
+                            </button>
+                            <a href="{% url 'my_resumes' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
