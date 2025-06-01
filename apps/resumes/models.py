@@ -150,6 +150,20 @@ class WorkExperience(models.Model):
     
     def __str__(self):
         return f"{self.company_name} - {self.position}"
+    
+    def save(self, *args, **kwargs):
+        """Переопределение метода save() для автоматической логики"""
+        # Если текущая работа, убираем дату окончания
+        if self.is_current:
+            self.end_date = None
+        
+        # Автоматически ставим порядок, если не указан
+        if not self.order:
+            max_order = WorkExperience.objects.filter(resume=self.resume).aggregate(models.Max('order'))['order__max']
+            self.order = (max_order or 0) + 1
+        
+        # Вызываем родительский save()
+        super().save(*args, **kwargs)
 
 
 class Education(models.Model):
