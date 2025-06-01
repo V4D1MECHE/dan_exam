@@ -1,0 +1,14 @@
+<div class="recent-resumes">
+    <h4>Последние резюме</h4>
+    <div class="resume-list">
+    {% for resume in resumes %}
+        <div class="resume-item">
+            <h5><a href="{{ resume.get_absolute_url }}">{{ resume.title }}</a></h5>
+            <p>{{ resume.user.first_name }} {{ resume.user.last_name }}</p>
+            <p>{{ resume.city }}</p>
+        </div>
+    {% empty %}
+        <p>Резюме не найдены</p>
+    {% endfor %}
+    </div>
+</div>

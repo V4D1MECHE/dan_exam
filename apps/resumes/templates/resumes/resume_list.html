@@ -1,0 +1,106 @@
+{% load resume_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список резюме</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; }
+        .resume-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; }
+        .stats { background: #e8f4fd; padding: 10px; margin-bottom: 20px; }
+        .pagination { text-align: center; margin: 20px 0; }
+        .sidebar { float: right; width: 250px; margin-left: 20px; }
+        .main-content { margin-right: 270px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        {% popular_skills 7 %}
+        {% recent_resumes 5 %}
+    </div>
+
+    <div class="main-content">
+        <h1>Список резюме</h1>
+        
+        <div class="stats">
+            <h3>Статистика</h3>
+            <p>Всего резюме: {{ stats.total_count }}</p>
+            <p>Средняя зарплата: {{ stats.avg_salary|salary_format }}</p>
+            <p>Максимальная зарплата: {{ stats.max_salary|salary_format }}</p>
+            <p>Общее количество публичных резюме: {% total_resumes %}</p>
+            <p>Ваших резюме: {% user_resume_count %}</p>
+        </div>
+
+        <div class="filters">
+            <h3>Фильтры</h3>
+            <form method="get">
+                <input type="text" name="city" value="{{ city }}" placeholder="Город">
+                <select name="employment_type">
+                    <option value="">Тип занятости</option>
+                    <option value="FULL" {% if employment_type == 'FULL' %}selected{% endif %}>Полная</option>
+                    <option value="PART" {% if employment_type == 'PART' %}selected{% endif %}>Частичная</option>
+                    <option value="REMOTE" {% if employment_type == 'REMOTE' %}selected{% endif %}>Удаленная</option>
+                    <option value="HYBRID" {% if employment_type == 'HYBRID' %}selected{% endif %}>Гибридная</option>
+                </select>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по имени или должности">
+                <label>
+                    <input type="checkbox" name="exclude_no_photo" value="1" {% if exclude_no_photo == '1' %}checked{% endif %}>
+                    Только с фото
+                </label>
+                <select name="sort">
+                    <option value="-updated_at" {% if sort_by == '-updated_at' %}selected{% endif %}>По дате обновления</option>
+                    <option value="salary" {% if sort_by == 'salary' %}selected{% endif %}>По зарплате</option>
+                    <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате создания</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По имени</option>
+                </select>
+                <button type="submit">Применить</button>
+            </form>
+        </div>
+
+        <div class="resume-list">
+            {% for resume in resumes %}
+            <div class="resume-item">
+                <h3><a href="{{ resume.get_absolute_url }}">{{ resume.title }}</a></h3>
+                <p><strong>Соискатель:</strong> {{ resume.user.first_name }} {{ resume.user.last_name }}</p>
+                <p><strong>Город:</strong> {{ resume.city }}</p>
+                <p><strong>Тип занятости:</strong> {{ resume.employment_type|employment_type_icon }} {{ resume.get_employment_type_display }}</p>
+                <p><strong>Зарплата:</strong> 
+                    {% if resume.salary_from %}
+                        от {{ resume.salary_from|salary_format }}
+                    {% endif %}
+                    {% if resume.salary_to %}
+                        до {{ resume.salary_to|salary_format }}
+                    {% endif %}
+                </p>
+                <p><strong>Обновлено:</strong> {{ resume.updated_at|date:"d.m.Y H:i" }}</p>
+                {% if resume.summary %}
+                <p>{{ resume.summary|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Резюме не найдены.</p>
+            {% endfor %}
+        </div>
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if resumes.has_previous %}
+                    <a href="?page=1{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">&laquo; первая</a>
+                    <a href="?page={{ resumes.previous_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">предыдущая</a>
+                {% endif %}
+
+                <span class="current">
+                    Страница {{ resumes.number }} из {{ resumes.paginator.num_pages }}
+                </span>
+
+                {% if resumes.has_next %}
+                    <a href="?page={{ resumes.next_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">следующая</a>
+                    <a href="?page={{ resumes.paginator.num_pages }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">последняя &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</body>
+</html>

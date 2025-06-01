@@ -1,0 +1,10 @@
+<div class="popular-skills">
+    <h4>Популярные навыки</h4>
+    <ul>
+    {% for skill in skills %}
+        <li>{{ skill.name }} ({{ skill.usage_count }})</li>
+    {% empty %}
+        <li>Навыки не найдены</li>
+    {% endfor %}
+    </ul>
+</div>

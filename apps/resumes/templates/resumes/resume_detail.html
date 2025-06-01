@@ -1,0 +1,98 @@
+{% load resume_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ resume.title }} - {{ resume.user.first_name }} {{ resume.user.last_name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .resume-header { border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 20px; }
+        .section { margin-bottom: 30px; }
+        .work-item { border-left: 3px solid #007bff; padding-left: 15px; margin-bottom: 15px; }
+        .sidebar { float: right; width: 250px; margin-left: 20px; }
+        .main-content { margin-right: 270px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        {% popular_skills %}
+        {% recent_resumes %}
+    </div>
+
+    <div class="main-content">
+        <div class="resume-header">
+            <h1>{{ resume.title }}</h1>
+            <h2>{{ resume.user.first_name }} {{ resume.user.last_name }}</h2>
+            {% if resume.city %}
+            <p><strong>Город:</strong> {{ resume.city }}</p>
+            {% endif %}
+            <p><strong>Тип занятости:</strong> {{ resume.employment_type|employment_type_icon }} {{ resume.get_employment_type_display }}</p>
+            {% if resume.salary_from or resume.salary_to %}
+            <p><strong>Зарплата:</strong> 
+                {% if resume.salary_from %}
+                    от {{ resume.salary_from|salary_format }}
+                {% endif %}
+                {% if resume.salary_to %}
+                    до {{ resume.salary_to|salary_format }}
+                {% endif %}
+            </p>
+            {% endif %}
+        </div>
+
+        {% if resume.summary %}
+        <div class="section">
+            <h3>О себе</h3>
+            <p>{{ resume.summary|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <h3>Опыт работы</h3>
+            {% for work in work_experiences %}
+            <div class="work-item">
+                <h4>{{ work.position }}</h4>
+                <p><strong>{{ work.company_name }}</strong></p>
+                <p>{{ work.start_date|date:"m.Y" }} - 
+                    {% if work.is_current %}
+                        по настоящее время
+                    {% elif work.end_date %}
+                        {{ work.end_date|date:"m.Y" }}
+                    {% endif %}
+                </p>
+                {% if work.description %}
+                <p>{{ work.description|linebreaks }}</p>
+                {% endif %}
+                {% if work.achievements %}
+                <p><strong>Достижения:</strong> {{ work.achievements|linebreaks }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Опыт работы не указан.</p>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <h3>Контакты</h3>
+            {% for contact in resume.contacts.all %}
+            <p><strong>{{ contact.get_contact_type_display }}:</strong> {{ contact.value }}</p>
+            {% empty %}
+            <p>Контактная информация не указана.</p>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <h3>Навыки</h3>
+            {% for skill in resume.skills.all %}
+            <span style="background: #e3f2fd; padding: 5px 10px; margin: 2px; display: inline-block; border-radius: 15px;">
+                {{ skill.name }} ({{ skill.get_level_display }})
+            </span>
+            {% empty %}
+            <p>Навыки не указаны.</p>
+            {% endfor %}
+        </div>
+
+        <a href="{% url 'resume_list' %}">← Вернуться к списку резюме</a>
+    </div>
+</body>
+</html>
