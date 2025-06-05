@@ -1,5 +1,7 @@
 from django import template
 from django.db.models import Count
+from django.utils import timezone
+from datetime import timedelta
 from ..models import Resume, Skill, ResumeTemplate
 
 register = template.Library()
@@ -42,6 +44,10 @@ def salary_format(value):
     """Шаблонный фильтр для форматирования зарплаты"""
     if not value:
         return "Не указана"
+    
+    # Преобразуем в int для корректного форматирования
+    value = int(value)
+    
     if value >= 1000000:
         return f"{value // 1000000}.{(value % 1000000) // 100000} млн ₽"
     elif value >= 1000:
@@ -60,3 +66,28 @@ def employment_type_icon(value):
         'HYBRID': '🔄',
     }
     return icons.get(value, '💼')
+
+
+@register.filter
+def public_resumes_count(resumes):
+    """Подсчет публичных резюме"""
+    if hasattr(resumes, 'filter'):
+        return resumes.filter(is_public=True).count()
+    return len([r for r in resumes if r.is_public])
+
+
+@register.filter
+def private_resumes_count(resumes):
+    """Подсчет приватных резюме"""
+    if hasattr(resumes, 'filter'):
+        return resumes.filter(is_public=False).count()
+    return len([r for r in resumes if not r.is_public])
+
+
+@register.filter
+def recent_resumes_count(resumes):
+    """Подсчет резюме, обновленных за последнюю неделю"""
+    week_ago = timezone.now() - timedelta(days=7)
+    if hasattr(resumes, 'filter'):
+        return resumes.filter(updated_at__gte=week_ago).count()
+    return len([r for r in resumes if r.updated_at >= week_ago])

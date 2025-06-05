@@ -1,20 +1,21 @@
+{% extends 'base.html' %}
 {% load resume_tags %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ resume.title }} - {{ resume.user.first_name }} {{ resume.user.last_name }}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .resume-header { border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 20px; }
-        .section { margin-bottom: 30px; }
-        .work-item { border-left: 3px solid #007bff; padding-left: 15px; margin-bottom: 15px; }
-        .sidebar { float: right; width: 250px; margin-left: 20px; }
-        .main-content { margin-right: 270px; }
-    </style>
-</head>
-<body>
+
+{% block title %}{{ resume.title }} - {{ resume.user.first_name }} {{ resume.user.last_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resume-header { border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 20px; }
+    .section { margin-bottom: 30px; }
+    .work-item { border-left: 3px solid #007bff; padding-left: 15px; margin-bottom: 15px; background: #f8f9fa; padding: 15px; border-radius: 5px; }
+    .sidebar { float: right; width: 250px; margin-left: 20px; }
+    .main-content { margin-right: 270px; }
+    .skill-tag { background: #e3f2fd; padding: 5px 10px; margin: 2px; display: inline-block; border-radius: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
     <div class="sidebar">
         {% popular_skills %}
         {% recent_resumes %}
@@ -68,7 +69,7 @@
                 {% endif %}
             </div>
             {% empty %}
-            <p>Опыт работы не указан.</p>
+            <p class="text-muted">Опыт работы не указан.</p>
             {% endfor %}
         </div>
 
@@ -77,22 +78,24 @@
             {% for contact in resume.contacts.all %}
             <p><strong>{{ contact.get_contact_type_display }}:</strong> {{ contact.value }}</p>
             {% empty %}
-            <p>Контактная информация не указана.</p>
+            <p class="text-muted">Контактная информация не указана.</p>
             {% endfor %}
         </div>
 
         <div class="section">
             <h3>Навыки</h3>
             {% for skill in resume.skills.all %}
-            <span style="background: #e3f2fd; padding: 5px 10px; margin: 2px; display: inline-block; border-radius: 15px;">
+            <span class="skill-tag">
                 {{ skill.name }} ({{ skill.get_level_display }})
             </span>
             {% empty %}
-            <p>Навыки не указаны.</p>
+            <p class="text-muted">Навыки не указаны.</p>
             {% endfor %}
         </div>
 
-        <a href="{% url 'resume_list' %}">← Вернуться к списку резюме</a>
+        <div class="mt-4">
+            <a href="{% url 'resume_list' %}" class="btn btn-secondary">← Вернуться к списку резюме</a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

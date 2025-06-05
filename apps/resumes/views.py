@@ -118,9 +118,20 @@ def my_resumes(request):
     if skill_filter:
         all_resumes = all_resumes.filter(skills__name__icontains=skill_filter).distinct()
     
+    # Пагинация
+    paginator = Paginator(all_resumes, 6)  # 6 резюме на страницу
+    page = request.GET.get('page')
+    try:
+        resumes = paginator.page(page)
+    except PageNotAnInteger:
+        resumes = paginator.page(1)
+    except EmptyPage:
+        resumes = paginator.page(paginator.num_pages)
+    
     context = {
         'public_resumes': public_resumes,
         'all_resumes': all_resumes,
+        'resumes': resumes,  # Пагинированные резюме
         'skill_filter': skill_filter,
     }
     
@@ -167,6 +178,7 @@ class ResumeCreateView(LoginRequiredMixin, CreateView):
     model = Resume
     form_class = ResumeForm
     template_name = 'resumes/resume_form.html'
+    success_url = reverse_lazy('my_resumes')
     
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -291,7 +303,6 @@ class OptimizedResumeListView(ListView):
         # Демонстрация prefetch_related для reverse ForeignKey и ManyToMany
         queryset = queryset.prefetch_related(
             # Предзагружаем связанные объекты
-            'skills',  # Навыки
             'work_experiences',  # Опыт работы
             'educations',  # Образование
             'contacts',  # Контакты
@@ -300,7 +311,7 @@ class OptimizedResumeListView(ListView):
                 'skills',
                 queryset=Skill.objects.select_related('resume').prefetch_related(
                     'tags',  # Теги навыков
-                    'skilltag_set'  # Промежуточная модель
+                    'skilltagrelation_set'  # Промежуточная модель
                 )
             )
         )
