@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.db.models import Manager
 from django.core.exceptions import ValidationError
+from simple_history.models import HistoricalRecords
 import uuid
 
 
@@ -22,6 +23,7 @@ class ResumeTemplate(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Активен")
     is_default = models.BooleanField(default=False, verbose_name="По умолчанию")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    history = HistoricalRecords()
     
     class Meta:
         verbose_name = "Шаблон резюме"
@@ -70,6 +72,7 @@ class Resume(models.Model):
     
     objects = models.Manager()
     public_resumes = PublicResumeManager()
+    history = HistoricalRecords()
     
     class Meta:
         verbose_name = "Резюме"
@@ -210,6 +213,49 @@ class Education(models.Model):
 
 
 
+class SkillTag(models.Model):
+    """Теги навыков"""
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название тега")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    color = models.CharField(max_length=7, default='#007bff', verbose_name="Цвет")
+    is_popular = models.BooleanField(default=False, verbose_name="Популярный")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Тег навыка" 
+        verbose_name_plural = "Теги навыков"
+        ordering = ['-is_popular', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
+class SkillTagRelation(models.Model):
+    """Промежуточная модель для связи навыков и тегов"""
+    skill = models.ForeignKey('Skill', on_delete=models.CASCADE, verbose_name="Навык")
+    tag = models.ForeignKey(SkillTag, on_delete=models.CASCADE, verbose_name="Тег")
+    proficiency_level = models.IntegerField(choices=[
+        (1, 'Начальный'),
+        (2, 'Базовый'), 
+        (3, 'Средний'),
+        (4, 'Продвинутый'),
+        (5, 'Эксперт'),
+    ], default=3, verbose_name="Уровень владения")
+    years_of_experience = models.PositiveIntegerField(default=0, verbose_name="Лет опыта")
+    last_used = models.DateField(null=True, blank=True, verbose_name="Последнее использование") 
+    is_certified = models.BooleanField(default=False, verbose_name="Есть сертификат")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Дата создания")
+    
+    class Meta:
+        verbose_name = "Связь навык-тег"
+        verbose_name_plural = "Связи навыков и тегов"
+        unique_together = ['skill', 'tag']
+        ordering = ['-proficiency_level', '-years_of_experience']
+    
+    def __str__(self):
+        return f"{self.skill.name} - {self.tag.name} ({self.get_proficiency_level_display()})"
+
+
 class Skill(models.Model):
     """Навыки"""
     LEVEL_CHOICES = [
@@ -235,7 +281,9 @@ class Skill(models.Model):
     color = models.CharField(max_length=7, default='#007bff', verbose_name="Цвет")
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    # Убираем связь с SkillTag - теперь навык сам является тегом
+    
+    # ManyToManyField с параметром through для демонстрации Lab 10 Point 8
+    tags = models.ManyToManyField(SkillTag, through=SkillTagRelation, verbose_name="Теги", blank=True)
     
     class Meta:
         verbose_name = "Навык"

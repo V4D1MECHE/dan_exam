@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" style="background: white;">
+    <defs>
+        <style>
+            .table { fill: #f8f9fa; stroke: #333; stroke-width: 2; }
+            .table-header { fill: #007bff; stroke: #333; stroke-width: 1; }
+            .table-text { font-family: Arial, sans-serif; font-size: 12px; fill: #333; }
+            .table-title { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: white; }
+            .field-text { font-family: 'Courier New', monospace; font-size: 10px; fill: #333; }
+            .pk { font-weight: bold; fill: #d63384; }
+            .fk { font-weight: bold; fill: #28a745; }
+            .connection { stroke: #666; stroke-width: 2; fill: none; }
+            .one { fill: #333; font-size: 12px; font-weight: bold; }
+            .many { fill: #333; font-size: 12px; font-weight: bold; }
+        </style>
+    </defs>
+    
+    <!-- CustomUser Table -->
+    <g id="customuser">
+        <rect class="table" x="50" y="50" width="200" height="180"/>
+        <rect class="table-header" x="50" y="50" width="200" height="30"/>
+        <text class="table-title" x="150" y="70" text-anchor="middle">CustomUser</text>
+        <text class="field-text pk" x="60" y="95">id (PK)</text>
+        <text class="field-text" x="60" y="110">username</text>
+        <text class="field-text" x="60" y="125">email</text>
+        <text class="field-text" x="60" y="140">first_name</text>
+        <text class="field-text" x="60" y="155">last_name</text>
+        <text class="field-text" x="60" y="170">phone</text>
+        <text class="field-text" x="60" y="185">birth_date</text>
+        <text class="field-text" x="60" y="200">password</text>
+        <text class="field-text" x="60" y="215">is_active</text>
+    </g>
+    
+    <!-- Resume Table -->
+    <g id="resume">
+        <rect class="table" x="400" y="50" width="250" height="280"/>
+        <rect class="table-header" x="400" y="50" width="250" height="30"/>
+        <text class="table-title" x="525" y="70" text-anchor="middle">Resume</text>
+        <text class="field-text pk" x="410" y="95">id (PK)</text>
+        <text class="field-text fk" x="410" y="110">user_id (FK → CustomUser)</text>
+        <text class="field-text fk" x="410" y="125">template_id (FK → ResumeTemplate)</text>
+        <text class="field-text" x="410" y="140">title</text>
+        <text class="field-text" x="410" y="155">photo</text>
+        <text class="field-text" x="410" y="170">city</text>
+        <text class="field-text" x="410" y="185">employment_type</text>
+        <text class="field-text" x="410" y="200">salary_from</text>
+        <text class="field-text" x="410" y="215">salary_to</text>
+        <text class="field-text" x="410" y="230">currency</text>
+        <text class="field-text" x="410" y="245">summary</text>
+        <text class="field-text" x="410" y="260">is_public</text>
+        <text class="field-text" x="410" y="275">is_active</text>
+        <text class="field-text" x="410" y="290">created_at</text>
+        <text class="field-text" x="410" y="305">updated_at</text>
+    </g>
+    
+    <!-- ResumeTemplate Table -->
+    <g id="resumetemplate">
+        <rect class="table" x="750" y="50" width="200" height="180"/>
+        <rect class="table-header" x="750" y="50" width="200" height="30"/>
+        <text class="table-title" x="850" y="70" text-anchor="middle">ResumeTemplate</text>
+        <text class="field-text pk" x="760" y="95">id (PK)</text>
+        <text class="field-text" x="760" y="110">name</text>
+        <text class="field-text" x="760" y="125">description</text>
+        <text class="field-text" x="760" y="140">preview_image</text>
+        <text class="field-text" x="760" y="155">css_styles</text>
+        <text class="field-text" x="760" y="170">is_active</text>
+        <text class="field-text" x="760" y="185">is_default</text>
+        <text class="field-text" x="760" y="200">created_at</text>
+    </g>
+    
+    <!-- Contact Table -->
+    <g id="contact">
+        <rect class="table" x="50" y="350" width="250" height="200"/>
+        <rect class="table-header" x="50" y="350" width="250" height="30"/>
+        <text class="table-title" x="175" y="370" text-anchor="middle">Contact</text>
+        <text class="field-text pk" x="60" y="395">id (PK)</text>
+        <text class="field-text fk" x="60" y="410">resume_id (FK → Resume)</text>
+        <text class="field-text" x="60" y="425">contact_type</text>
+        <text class="field-text" x="60" y="440">value</text>
+        <text class="field-text" x="60" y="455">label</text>
+        <text class="field-text" x="60" y="470">is_primary</text>
+        <text class="field-text" x="60" y="485">is_visible</text>
+        <text class="field-text" x="60" y="500">order</text>
+        <text class="field-text" x="60" y="515">created_at</text>
+    </g>
+    
+    <!-- WorkExperience Table -->
+    <g id="workexperience">
+        <rect class="table" x="350" y="400" width="250" height="220"/>
+        <rect class="table-header" x="350" y="400" width="250" height="30"/>
+        <text class="table-title" x="475" y="420" text-anchor="middle">WorkExperience</text>
+        <text class="field-text pk" x="360" y="445">id (PK)</text>
+        <text class="field-text fk" x="360" y="460">resume_id (FK → Resume)</text>
+        <text class="field-text" x="360" y="475">company_name</text>
+        <text class="field-text" x="360" y="490">position</text>
+        <text class="field-text" x="360" y="505">start_date</text>
+        <text class="field-text" x="360" y="520">end_date</text>
+        <text class="field-text" x="360" y="535">is_current</text>
+        <text class="field-text" x="360" y="550">description</text>
+        <text class="field-text" x="360" y="565">achievements</text>
+        <text class="field-text" x="360" y="580">order</text>
+        <text class="field-text" x="360" y="595">created_at</text>
+    </g>
+    
+    <!-- Education Table -->
+    <g id="education">
+        <rect class="table" x="650" y="400" width="250" height="220"/>
+        <rect class="table-header" x="650" y="400" width="250" height="30"/>
+        <text class="table-title" x="775" y="420" text-anchor="middle">Education</text>
+        <text class="field-text pk" x="660" y="445">id (PK)</text>
+        <text class="field-text fk" x="660" y="460">resume_id (FK → Resume)</text>
+        <text class="field-text" x="660" y="475">institution_name</text>
+        <text class="field-text" x="660" y="490">faculty</text>
+        <text class="field-text" x="660" y="505">degree</text>
+        <text class="field-text" x="660" y="520">field_of_study</text>
+        <text class="field-text" x="660" y="535">start_date</text>
+        <text class="field-text" x="660" y="550">end_date</text>
+        <text class="field-text" x="660" y="565">is_current</text>
+        <text class="field-text" x="660" y="580">description</text>
+        <text class="field-text" x="660" y="595">order</text>
+        <text class="field-text" x="660" y="610">created_at</text>
+    </g>
+    
+    <!-- Skill Table -->
+    <g id="skill">
+        <rect class="table" x="950" y="350" width="200" height="220"/>
+        <rect class="table-header" x="950" y="350" width="200" height="30"/>
+        <text class="table-title" x="1050" y="370" text-anchor="middle">Skill</text>
+        <text class="field-text pk" x="960" y="395">id (PK)</text>
+        <text class="field-text fk" x="960" y="410">resume_id (FK → Resume)</text>
+        <text class="field-text" x="960" y="425">name</text>
+        <text class="field-text" x="960" y="440">category</text>
+        <text class="field-text" x="960" y="455">level</text>
+        <text class="field-text" x="960" y="470">is_key_skill</text>
+        <text class="field-text" x="960" y="485">color</text>
+        <text class="field-text" x="960" y="500">order</text>
+        <text class="field-text" x="960" y="515">created_at</text>
+    </g>
+    
+    <!-- Language Table -->
+    <g id="language">
+        <rect class="table" x="50" y="650" width="200" height="180"/>
+        <rect class="table-header" x="50" y="650" width="200" height="30"/>
+        <text class="table-title" x="150" y="670" text-anchor="middle">Language</text>
+        <text class="field-text pk" x="60" y="695">id (PK)</text>
+        <text class="field-text fk" x="60" y="710">resume_id (FK → Resume)</text>
+        <text class="field-text" x="60" y="725">name</text>
+        <text class="field-text" x="60" y="740">level</text>
+        <text class="field-text" x="60" y="755">is_native</text>
+        <text class="field-text" x="60" y="770">order</text>
+        <text class="field-text" x="60" y="785">created_at</text>
+    </g>
+    
+    <!-- Certificate Table -->
+    <g id="certificate">
+        <rect class="table" x="300" y="700" width="250" height="240"/>
+        <rect class="table-header" x="300" y="700" width="250" height="30"/>
+        <text class="table-title" x="425" y="720" text-anchor="middle">Certificate</text>
+        <text class="field-text pk" x="310" y="745">id (PK)</text>
+        <text class="field-text fk" x="310" y="760">resume_id (FK → Resume)</text>
+        <text class="field-text" x="310" y="775">name</text>
+        <text class="field-text" x="310" y="790">issuer</text>
+        <text class="field-text" x="310" y="805">issue_date</text>
+        <text class="field-text" x="310" y="820">expiry_date</text>
+        <text class="field-text" x="310" y="835">credential_id</text>
+        <text class="field-text" x="310" y="850">credential_url</text>
+        <text class="field-text" x="310" y="865">certificate_file</text>
+        <text class="field-text" x="310" y="880">description</text>
+        <text class="field-text" x="310" y="895">order</text>
+        <text class="field-text" x="310" y="910">created_at</text>
+    </g>
+    
+    <!-- Award Table -->
+    <g id="award">
+        <rect class="table" x="600" y="700" width="200" height="180"/>
+        <rect class="table-header" x="600" y="700" width="200" height="30"/>
+        <text class="table-title" x="700" y="720" text-anchor="middle">Award</text>
+        <text class="field-text pk" x="610" y="745">id (PK)</text>
+        <text class="field-text fk" x="610" y="760">resume_id (FK → Resume)</text>
+        <text class="field-text" x="610" y="775">title</text>
+        <text class="field-text" x="610" y="790">issuer</text>
+        <text class="field-text" x="610" y="805">date</text>
+        <text class="field-text" x="610" y="820">description</text>
+        <text class="field-text" x="610" y="835">order</text>
+        <text class="field-text" x="610" y="850">created_at</text>
+    </g>
+    
+    <!-- Recommendation Table -->
+    <g id="recommendation">
+        <rect class="table" x="850" y="650" width="250" height="280"/>
+        <rect class="table-header" x="850" y="650" width="250" height="30"/>
+        <text class="table-title" x="975" y="670" text-anchor="middle">Recommendation</text>
+        <text class="field-text pk" x="860" y="695">id (PK)</text>
+        <text class="field-text fk" x="860" y="710">resume_id (FK → Resume)</text>
+        <text class="field-text" x="860" y="725">recommender_name</text>
+        <text class="field-text" x="860" y="740">recommender_position</text>
+        <text class="field-text" x="860" y="755">recommender_company</text>
+        <text class="field-text" x="860" y="770">recommender_phone</text>
+        <text class="field-text" x="860" y="785">recommender_email</text>
+        <text class="field-text" x="860" y="800">relationship</text>
+        <text class="field-text" x="860" y="815">text</text>
+        <text class="field-text" x="860" y="830">is_visible</text>
+        <text class="field-text" x="860" y="845">order</text>
+        <text class="field-text" x="860" y="860">created_at</text>
+    </g>
+    
+    <!-- SharedLink Table -->
+    <g id="sharedlink">
+        <rect class="table" x="1200" y="350" width="180" height="220"/>
+        <rect class="table-header" x="1200" y="350" width="180" height="30"/>
+        <text class="table-title" x="1290" y="370" text-anchor="middle">SharedLink</text>
+        <text class="field-text pk" x="1210" y="395">id (PK)</text>
+        <text class="field-text fk" x="1210" y="410">resume_id (FK)</text>
+        <text class="field-text" x="1210" y="425">slug</text>
+        <text class="field-text" x="1210" y="440">link_type</text>
+        <text class="field-text" x="1210" y="455">password</text>
+        <text class="field-text" x="1210" y="470">views_count</text>
+        <text class="field-text" x="1210" y="485">is_active</text>
+        <text class="field-text" x="1210" y="500">expires_at</text>
+        <text class="field-text" x="1210" y="515">last_viewed_at</text>
+        <text class="field-text" x="1210" y="530">created_at</text>
+    </g>
+    
+    <!-- Relationships -->
+    
+    <!-- CustomUser to Resume (1:N) -->
+    <line class="connection" x1="250" y1="140" x2="400" y2="140"/>
+    <text class="one" x="260" y="135">1</text>
+    <text class="many" x="385" y="135">N</text>
+    
+    <!-- ResumeTemplate to Resume (1:N) -->
+    <line class="connection" x1="750" y1="140" x2="650" y2="140"/>
+    <text class="one" x="740" y="135">1</text>
+    <text class="many" x="660" y="135">N</text>
+    
+    <!-- Resume to Contact (1:N) -->
+    <line class="connection" x1="400" y1="200" x2="300" y2="410"/>
+    <text class="one" x="390" y="195">1</text>
+    <text class="many" x="310" y="405">N</text>
+    
+    <!-- Resume to WorkExperience (1:N) -->
+    <line class="connection" x1="500" y1="330" x2="475" y2="400"/>
+    <text class="one" x="495" y="345">1</text>
+    <text class="many" x="480" y="395">N</text>
+    
+    <!-- Resume to Education (1:N) -->
+    <line class="connection" x1="600" y1="330" x2="700" y2="400"/>
+    <text class="one" x="605" y="345">1</text>
+    <text class="many" x="705" y="395">N</text>
+    
+    <!-- Resume to Skill (1:N) -->
+    <line class="connection" x1="650" y1="200" x2="950" y2="410"/>
+    <text class="one" x="660" y="195">1</text>
+    <text class="many" x="940" y="405">N</text>
+    
+    <!-- Resume to Language (1:N) -->
+    <line class="connection" x1="400" y1="280" x2="250" y2="710"/>
+    <text class="one" x="390" y="275">1</text>
+    <text class="many" x="260" y="705">N</text>
+    
+    <!-- Resume to Certificate (1:N) -->
+    <line class="connection" x1="500" y1="330" x2="425" y2="700"/>
+    <text class="one" x="495" y="345">1</text>
+    <text class="many" x="430" y="695">N</text>
+    
+    <!-- Resume to Award (1:N) -->
+    <line class="connection" x1="550" y1="330" x2="650" y2="700"/>
+    <text class="one" x="555" y="345">1</text>
+    <text class="many" x="655" y="695">N</text>
+    
+    <!-- Resume to Recommendation (1:N) -->
+    <line class="connection" x1="650" y1="250" x2="850" y2="710"/>
+    <text class="one" x="660" y="245">1</text>
+    <text class="many" x="840" y="705">N</text>
+    
+    <!-- Resume to SharedLink (1:N) -->
+    <line class="connection" x1="650" y1="180" x2="1200" y2="450"/>
+    <text class="one" x="660" y="175">1</text>
+    <text class="many" x="1190" y="445">N</text>
+    
+</svg>

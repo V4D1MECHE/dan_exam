@@ -1,12 +1,18 @@
 from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from .models import Resume, Skill, WorkExperience, Education, Contact, Language, Certificate, Award, Recommendation
 from .serializers import (
     ResumeSerializer, ResumeListSerializer, SkillSerializer, 
     WorkExperienceSerializer, EducationSerializer, ContactSerializer,
     LanguageSerializer, CertificateSerializer, AwardSerializer, RecommendationSerializer
+)
+from .filters import (
+    ResumeFilter, SkillFilter, WorkExperienceFilter, EducationFilter,
+    ContactFilter, LanguageFilter, CertificateFilter, AwardFilter
 )
 
 
@@ -15,6 +21,11 @@ class ResumeListCreateAPIView(generics.ListCreateAPIView):
     queryset = Resume.objects.filter(is_public=True).select_related('user')
     serializer_class = ResumeListSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ResumeFilter
+    search_fields = ['title', 'summary', 'city', 'user__first_name', 'user__last_name']
+    ordering_fields = ['created_at', 'updated_at', 'salary_from', 'salary_to', 'title']
+    ordering = ['-updated_at']
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -30,6 +41,8 @@ class ResumeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Resume.objects.all()
     serializer_class = ResumeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ResumeFilter
     
     def get_queryset(self):
         queryset = Resume.objects.select_related('user').prefetch_related(
@@ -47,6 +60,11 @@ class MyResumesAPIView(generics.ListAPIView):
     """Мои резюме (только для авторизованных пользователей)"""
     serializer_class = ResumeListSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ResumeFilter
+    search_fields = ['title', 'summary', 'city']
+    ordering_fields = ['created_at', 'updated_at', 'title']
+    ordering = ['-updated_at']
     
     def get_queryset(self):
         return Resume.objects.filter(user=self.request.user)
@@ -56,6 +74,11 @@ class SkillListAPIView(generics.ListAPIView):
     """Список всех навыков"""
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = SkillFilter
+    search_fields = ['name']
+    ordering_fields = ['name', 'level', 'created_at']
+    ordering = ['name']
 
 
 @api_view(['GET'])
@@ -84,6 +107,11 @@ def popular_skills(request):
 class WorkExperienceListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = WorkExperienceSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = WorkExperienceFilter
+    search_fields = ['company_name', 'position']
+    ordering_fields = ['start_date', 'end_date', 'created_at']
+    ordering = ['-start_date']
     
     def get_queryset(self):
         resume_id = self.kwargs['resume_id']
@@ -98,6 +126,8 @@ class WorkExperienceListCreateAPIView(generics.ListCreateAPIView):
 class WorkExperienceDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = WorkExperienceSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = WorkExperienceFilter
     
     def get_queryset(self):
         return WorkExperience.objects.filter(resume__user=self.request.user)
@@ -106,6 +136,11 @@ class WorkExperienceDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 class ContactListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ContactFilter
+    search_fields = ['value', 'label']
+    ordering_fields = ['contact_type', 'is_primary', 'created_at']
+    ordering = ['order', 'created_at']
     
     def get_queryset(self):
         resume_id = self.kwargs['resume_id']
@@ -120,6 +155,8 @@ class ContactListCreateAPIView(generics.ListCreateAPIView):
 class ContactDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ContactFilter
     
     def get_queryset(self):
         return Contact.objects.filter(resume__user=self.request.user)

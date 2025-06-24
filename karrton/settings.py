@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     # Third party apps
     'debug_toolbar',
     'rest_framework',
+    'django_filters',
+    'simple_history',
+    'import_export',
     
     # Local apps
     'apps.users',
@@ -58,6 +61,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Django Debug Toolbar
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # Simple History
+    'simple_history.middleware.HistoryRequestMiddleware',
     # Custom middleware для редиректа на главную
     'karrton.middleware.RedirectToHomeMiddleware',
 ]
@@ -110,6 +115,23 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
+}
 
 
 # Internationalization

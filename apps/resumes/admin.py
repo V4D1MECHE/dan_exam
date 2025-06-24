@@ -9,10 +9,78 @@ from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
+from import_export import resources, fields
+from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+from import_export.widgets import ForeignKeyWidget, DateWidget
 from .models import (
     ResumeTemplate, Resume, Contact, WorkExperience, Education,
-    Skill, Language, Award, Certificate, Recommendation, SharedLink
+    Skill, SkillTag, SkillTagRelation, Language, Award, Certificate, Recommendation, SharedLink
 )
+
+
+class ResumeResource(resources.ModelResource):
+    """Ресурс для экспорта резюме в Excel"""
+    user_email = fields.Field(column_name='email_пользователя', attribute='user__email')
+    user_full_name = fields.Field(column_name='полное_имя_пользователя')
+    salary_range = fields.Field(column_name='зарплатная_вилка')
+    template_name = fields.Field(column_name='название_шаблона', attribute='template__name')
+    
+    class Meta:
+        model = Resume
+        fields = ('id', 'title', 'user_email', 'user_full_name', 'template_name', 
+                 'city', 'employment_type', 'salary_from', 'salary_to', 'salary_range',
+                 'currency', 'summary', 'is_public', 'is_active', 'created_at', 'updated_at')
+        export_order = fields
+    
+    def dehydrate_user_full_name(self, resume):
+        """Кастомизация 1: Получение полного имени пользователя"""
+        return resume.user.get_full_name() or resume.user.email
+    
+    def dehydrate_salary_range(self, resume):
+        """Кастомизация 2: Форматирование зарплатной вилки"""
+        if resume.salary_from and resume.salary_to:
+            return f"{resume.salary_from:,} - {resume.salary_to:,} {resume.currency}"
+        elif resume.salary_from:
+            return f"от {resume.salary_from:,} {resume.currency}"
+        elif resume.salary_to:
+            return f"до {resume.salary_to:,} {resume.currency}"
+        return "Не указана"
+    
+    def dehydrate_employment_type(self, resume):
+        """Кастомизация 3: Преобразование типа занятости"""
+        return resume.get_employment_type_display() if resume.employment_type else ""
+
+
+class ContactResource(resources.ModelResource):
+    """Ресурс для экспорта контактов"""
+    resume_title = fields.Field(column_name='название_резюме', attribute='resume__title')
+    contact_type_display = fields.Field(column_name='тип_контакта_текст')
+    
+    class Meta:
+        model = Contact
+        fields = ('id', 'resume_title', 'contact_type', 'contact_type_display', 
+                 'value', 'label', 'is_primary', 'is_visible', 'order', 'created_at')
+    
+    def dehydrate_contact_type_display(self, contact):
+        return contact.get_contact_type_display()
+
+
+class SkillResource(resources.ModelResource):
+    """Ресурс для экспорта навыков"""
+    resume_title = fields.Field(column_name='название_резюме', attribute='resume__title')
+    level_display = fields.Field(column_name='уровень_текст')
+    category_display = fields.Field(column_name='категория_текст')
+    
+    class Meta:
+        model = Skill
+        fields = ('id', 'resume_title', 'name', 'category', 'category_display',
+                 'level', 'level_display', 'is_key_skill', 'color', 'order', 'created_at')
+    
+    def dehydrate_level_display(self, skill):
+        return skill.get_level_display()
+    
+    def dehydrate_category_display(self, skill):
+        return skill.get_category_display()
 
 
 @admin.register(ResumeTemplate)
@@ -47,7 +115,8 @@ class ResumeTemplateAdmin(admin.ModelAdmin):
 
 
 @admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(ImportExportModelAdmin):
+    resource_class = ContactResource
     list_display = ['get_contact_display', 'resume', 'contact_type', 'is_primary', 'is_visible', 'order']
     list_filter = ['contact_type', 'is_primary', 'is_visible', 'created_at']
     search_fields = ['value', 'label', 'resume__title', 'resume__user__email']
@@ -90,6 +159,12 @@ class SkillInline(admin.TabularInline):
     model = Skill
     extra = 1
     fields = ['name', 'category', 'level', 'is_key_skill', 'order']
+
+
+class SkillTagRelationInline(admin.TabularInline):
+    model = SkillTagRelation  
+    extra = 1
+    fields = ['tag', 'proficiency_level', 'years_of_experience', 'is_certified']
 
 
 def export_resumes_to_pdf(modeladmin, request, queryset):
@@ -222,7 +297,8 @@ export_resumes_to_pdf.short_description = "Экспорт выбранных р�
 
 
 @admin.register(Resume)
-class ResumeAdmin(admin.ModelAdmin):
+class ResumeAdmin(ImportExportModelAdmin):
+    resource_class = ResumeResource
     list_display = ['title', 'user', 'template', 'city', 'employment_type', 'get_salary_range', 'is_public', 'is_active', 'created_at']
     list_filter = ['employment_type', 'currency', 'is_public', 'is_active', 'created_at', 'template']
     search_fields = ['title', 'user__email', 'user__first_name', 'user__last_name', 'city', 'summary']
@@ -320,17 +396,23 @@ class EducationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Skill)
-class SkillAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'level', 'color_display', 'resume', 'is_key_skill', 'order']
+class SkillAdmin(ImportExportModelAdmin):
+    resource_class = SkillResource
+    list_display = ['name', 'category', 'level', 'color_display', 'resume', 'is_key_skill', 'get_tags_count', 'order']
     list_filter = ['category', 'level', 'is_key_skill']
     search_fields = ['name', 'resume__title', 'resume__user__email']
     list_display_links = ['name']
     raw_id_fields = ['resume']
+    inlines = [SkillTagRelationInline]
     
     @admin.display(description='Цвет')
     def color_display(self, obj):
         return f'<span style="display:inline-block;width:20px;height:20px;background-color:{obj.color};border:1px solid #ccc;border-radius:3px;"></span> {obj.color}'
     color_display.allow_tags = True
+    
+    @admin.display(description='Теги')
+    def get_tags_count(self, obj):
+        return obj.tags.count()
     
     fieldsets = (
         ('Основная информация', {
@@ -455,4 +537,51 @@ class SharedLinkAdmin(admin.ModelAdmin):
     )
 
 
-# Убрали SkillTagAdmin и SkillTagRelationAdmin - теперь навык сам является тегом
+@admin.register(SkillTag)
+class SkillTagAdmin(admin.ModelAdmin):
+    list_display = ['name', 'color_display', 'is_popular', 'get_skills_count', 'created_at']
+    list_filter = ['is_popular', 'created_at']
+    search_fields = ['name', 'description']
+    list_display_links = ['name']
+    readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'
+    
+    @admin.display(description='Цвет')
+    def color_display(self, obj):
+        return f'<span style="display:inline-block;width:20px;height:20px;background-color:{obj.color};border:1px solid #ccc;border-radius:3px;"></span> {obj.color}'
+    color_display.allow_tags = True
+    
+    @admin.display(description='Количество навыков')
+    def get_skills_count(self, obj):
+        return obj.skilltagrelation_set.count()
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'description', 'color')
+        }),
+        ('Настройки', {
+            'fields': ('is_popular',)
+        }),
+        ('Служебная информация', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(SkillTagRelation)
+class SkillTagRelationAdmin(admin.ModelAdmin):
+    list_display = ['skill', 'tag', 'proficiency_level', 'years_of_experience', 'last_used', 'is_certified']
+    list_filter = ['proficiency_level', 'is_certified', 'years_of_experience', 'last_used']
+    search_fields = ['skill__name', 'tag__name', 'skill__resume__title']
+    list_display_links = ['skill', 'tag']
+    raw_id_fields = ['skill', 'tag']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('skill', 'tag')
+        }),
+        ('Характеристики', {
+            'fields': ('proficiency_level', 'years_of_experience', 'last_used', 'is_certified')
+        }),
+    )
