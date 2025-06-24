@@ -5,11 +5,72 @@
 
 {% block extra_css %}
 <style>
-    .filters { background: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-    .resume-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
-    .stats { background: #e8f4fd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-    .sidebar { float: right; width: 250px; margin-left: 20px; }
-    .main-content { margin-right: 270px; }
+    .filters { 
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 20px; 
+        margin-bottom: 30px; 
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        border: 1px solid rgba(31, 117, 254, 0.1);
+    }
+    .resume-item { 
+        background: white;
+        border: none;
+        padding: 24px; 
+        margin-bottom: 20px; 
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        transition: var(--transition);
+    }
+    .resume-item:hover {
+        box-shadow: var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+    .stats { 
+        background: linear-gradient(135deg, rgba(31, 117, 254, 0.1), rgba(74, 144, 226, 0.1));
+        padding: 20px; 
+        margin-bottom: 30px; 
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(31, 117, 254, 0.2);
+    }
+    .sidebar { 
+        float: right; 
+        width: 280px; 
+        margin-left: 20px; 
+    }
+    .main-content { 
+        margin-right: 300px; 
+        min-height: 500px;
+    }
+    .resume-item h3 a {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .resume-item h3 a:hover {
+        color: #1B69E6;
+    }
+    .search-box {
+        border-radius: 25px;
+        padding: 12px 20px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .search-box:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    @media (max-width: 768px) {
+        .sidebar {
+            float: none;
+            width: 100%;
+            margin-left: 0;
+            margin-bottom: 20px;
+        }
+        .main-content {
+            margin-right: 0;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -26,74 +87,174 @@
         <div class="stats">
             <h3>Статистика</h3>
             <p>Всего резюме: {{ stats.total_count }}</p>
-            <p>Средняя зарплата: {{ stats.avg_salary|salary_format }}</p>
-            <p>Максимальная зарплата: {{ stats.max_salary|salary_format }}</p>
+            <p>Средняя зарплата: {{ stats.avg_salary|salary_format_with_currency:"RUB" }}</p>
+            <p>Максимальная зарплата: {{ stats.max_salary|salary_format_with_currency:"RUB" }}</p>
             <p>Общее количество публичных резюме: {% total_resumes %}</p>
             <p>Ваших резюме: {% user_resume_count %}</p>
         </div>
 
         <div class="filters">
-            <h3>Фильтры</h3>
-            <form method="get" class="row g-3">
-                <div class="col-md-2">
-                    <input type="text" class="form-control" name="city" value="{{ city }}" placeholder="Город">
-                </div>
-                <div class="col-md-2">
-                    <select name="employment_type" class="form-select">
-                        <option value="">Тип занятости</option>
-                        <option value="FULL" {% if employment_type == 'FULL' %}selected{% endif %}>Полная</option>
-                        <option value="PART" {% if employment_type == 'PART' %}selected{% endif %}>Частичная</option>
-                        <option value="REMOTE" {% if employment_type == 'REMOTE' %}selected{% endif %}>Удаленная</option>
-                        <option value="HYBRID" {% if employment_type == 'HYBRID' %}selected{% endif %}>Гибридная</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Поиск по имени или должности">
-                </div>
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="exclude_no_photo" value="1" id="exclude_no_photo" {% if exclude_no_photo == '1' %}checked{% endif %}>
-                        <label class="form-check-label" for="exclude_no_photo">
-                            Только с фото
-                        </label>
+            <h4 class="mb-3"><i class="bi bi-funnel text-primary me-2"></i>Поиск и фильтры</h4>
+            <form method="get">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search text-primary"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control search-box border-start-0" 
+                                   name="search" 
+                                   value="{{ search_query|default:'' }}" 
+                                   placeholder="🔍 Поиск по имени, должности, навыкам или описанию..."
+                                   autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" 
+                               class="form-control" 
+                               name="city" 
+                               value="{{ city|default:'' }}" 
+                               placeholder="Город">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="employment_type" class="form-select">
+                            <option value="">Тип занятости</option>
+                            <option value="FULL" {% if employment_type == 'FULL' %}selected{% endif %}>Полная</option>
+                            <option value="PART" {% if employment_type == 'PART' %}selected{% endif %}>Частичная</option>
+                            <option value="REMOTE" {% if employment_type == 'REMOTE' %}selected{% endif %}>Удаленная</option>
+                            <option value="HYBRID" {% if employment_type == 'HYBRID' %}selected{% endif %}>Гибридная</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1"></i>Найти
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <select name="sort" class="form-select">
-                        <option value="-updated_at" {% if sort_by == '-updated_at' %}selected{% endif %}>По дате обновления</option>
-                        <option value="salary" {% if sort_by == 'salary' %}selected{% endif %}>По зарплате</option>
-                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате создания</option>
-                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По имени</option>
-                    </select>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary">Применить</button>
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-3">
+                        <select name="sort" class="form-select">
+                            <option value="-updated_at" {% if sort_by == '-updated_at' %}selected{% endif %}>По дате обновления</option>
+                            <option value="salary" {% if sort_by == 'salary' %}selected{% endif %}>По зарплате</option>
+                            <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате создания</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По имени</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="exclude_no_photo" value="1" id="exclude_no_photo" {% if exclude_no_photo == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="exclude_no_photo">
+                                Только с фото
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="key_skills_only" value="1" id="key_skills_only" {% if key_skills_only == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="key_skills_only">
+                                С ключевыми навыками
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        {% if search_query or city or employment_type or exclude_no_photo or key_skills_only %}
+                        <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle me-1"></i>Сбросить
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
             </form>
         </div>
+        
+        <!-- Результаты поиска -->
+        {% if search_query or city or employment_type or exclude_no_photo or key_skills_only %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Результаты поиска:</strong>
+            {% if search_query %}
+                по запросу "<em>{{ search_query }}</em>"
+            {% endif %}
+            {% if city %}
+                в городе "{{ city }}"
+            {% endif %}
+            {% if employment_type %}
+                с типом занятости "{{ employment_type }}"
+            {% endif %}
+            {% if exclude_no_photo %}
+                только с фото
+            {% endif %}
+            {% if key_skills_only %}
+                с ключевыми навыками
+            {% endif %}
+            — найдено {{ resumes|length }} резюме.
+        </div>
+        {% endif %}
 
         <div class="resume-list">
             {% for resume in resumes %}
-            <div class="resume-item">
-                <h3><a href="{{ resume.get_absolute_url }}" class="text-decoration-none">{{ resume.title }}</a></h3>
-                <p><strong>Соискатель:</strong> {{ resume.user.first_name }} {{ resume.user.last_name }}</p>
-                <p><strong>Город:</strong> {{ resume.city }}</p>
-                <p><strong>Тип занятости:</strong> {{ resume.employment_type|employment_type_icon }} {{ resume.get_employment_type_display }}</p>
-                <p><strong>Зарплата:</strong> 
-                    {% if resume.salary_from %}
-                        от {{ resume.salary_from|salary_format }}
-                    {% endif %}
-                    {% if resume.salary_to %}
-                        до {{ resume.salary_to|salary_format }}
-                    {% endif %}
-                </p>
-                <p><strong>Обновлено:</strong> {{ resume.updated_at|date:"d.m.Y H:i" }}</p>
-                {% if resume.summary %}
-                <p>{{ resume.summary|truncatewords:20 }}</p>
-                {% endif %}
-            </div>
+            <a href="{{ resume.get_absolute_url }}" class="text-decoration-none">
+                <div class="resume-item fade-in-up clickable-card">
+                    <div class="row align-items-start">
+                        <!-- Photo Column -->
+                        <div class="col-md-2">
+                            <div class="resume-photo-wrapper">
+                                {% if resume.photo %}
+                                    <img src="{{ resume.photo.url }}" alt="{{ resume.user.first_name }} {{ resume.user.last_name }}" class="resume-photo">
+                                {% else %}
+                                    <div class="resume-photo-placeholder">
+                                        <i class="bi bi-person-circle"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Main Content Column -->
+                        <div class="col-md-7">
+                            <h3 class="mb-3 text-truncate-custom">{{ resume.title }}</h3>
+                            <div class="row g-2 mb-3">
+                                <div class="col-12 col-sm-6">
+                                    <p class="mb-1 text-nowrap-custom d-flex align-items-center"><i class="bi bi-person-fill text-primary me-2"></i><strong class="me-1">Соискатель:</strong> <span class="text-truncate-custom" style="max-width: 150px;">{{ resume.user.first_name }} {{ resume.user.last_name }}</span></p>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <p class="mb-1 text-nowrap-custom d-flex align-items-center"><i class="bi bi-geo-alt-fill text-primary me-2"></i><strong class="me-1">Город:</strong> {{ resume.city }}</p>
+                                </div>
+                            </div>
+                            <p class="mb-2 text-nowrap-custom d-flex align-items-center"><i class="bi bi-briefcase-fill text-primary me-2"></i><strong class="me-1">Тип:</strong> {{ resume.employment_type|employment_type_icon }} {{ resume.get_employment_type_display }}</p>
+                            {% if resume.summary %}
+                            <p class="text-secondary mb-0">{{ resume.summary|truncatewords:15 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Salary & Date Column -->
+                        <div class="col-md-3">
+                            <div class="text-end">
+                                <div class="mb-2">
+                                    <strong class="text-success text-nowrap-custom">
+                                        {% if resume.salary_from %}
+                                            от {{ resume.salary_from|salary_format_with_currency:resume.currency }}
+                                        {% endif %}
+                                        {% if resume.salary_to %}
+                                            до {{ resume.salary_to|salary_format_with_currency:resume.currency }}
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                                <small class="text-muted text-nowrap-custom">
+                                    <i class="bi bi-clock-fill me-1"></i>
+                                    {{ resume.updated_at|date:"d.m.Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
             {% empty %}
-            <p class="text-muted">Резюме не найдены.</p>
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-muted mb-3"></i>
+                <p class="text-muted fs-5">Резюме не найдены</p>
+                <p class="text-secondary">Попробуйте изменить параметры поиска</p>
+            </div>
             {% endfor %}
         </div>
 
@@ -101,25 +262,25 @@
             <ul class="pagination justify-content-center">
                 {% if resumes.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">&laquo; Первая</a>
+                        <a class="page-link" href="?page=1{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}{% if key_skills_only %}&key_skills_only={{ key_skills_only }}{% endif %}&sort={{ sort_by }}">&laquo; Первая</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ resumes.previous_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">Предыдущая</a>
+                        <a class="page-link" href="?page={{ resumes.previous_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}{% if key_skills_only %}&key_skills_only={{ key_skills_only }}{% endif %}&sort={{ sort_by }}">Предыдущая</a>
                     </li>
                 {% endif %}
 
                 <li class="page-item active">
-                    <span class="page-link">
+                    <a class="page-link" href="#" style="color: white !important;">
                         Страница {{ resumes.number }} из {{ resumes.paginator.num_pages }}
-                    </span>
+                    </a>
                 </li>
 
                 {% if resumes.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ resumes.next_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">Следующая</a>
+                        <a class="page-link" href="?page={{ resumes.next_page_number }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}{% if key_skills_only %}&key_skills_only={{ key_skills_only }}{% endif %}&sort={{ sort_by }}">Следующая</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ resumes.paginator.num_pages }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}&sort={{ sort_by }}">Последняя &raquo;</a>
+                        <a class="page-link" href="?page={{ resumes.paginator.num_pages }}{% if city %}&city={{ city }}{% endif %}{% if employment_type %}&employment_type={{ employment_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if exclude_no_photo %}&exclude_no_photo={{ exclude_no_photo }}{% endif %}{% if key_skills_only %}&key_skills_only={{ key_skills_only }}{% endif %}&sort={{ sort_by }}">Последняя &raquo;</a>
                     </li>
                 {% endif %}
             </ul>

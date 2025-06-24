@@ -1,0 +1,563 @@
+/* Custom CSS для улучшения дизайна на основе Figma макета */
+
+:root {
+    --primary-color: #1F75FE;
+    --secondary-color: #010101;
+    --background-white: #FFFFFF;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-radius: 12px;
+    --shadow-light: 0 2px 8px rgba(31, 117, 254, 0.1);
+    --shadow-medium: 0 4px 16px rgba(31, 117, 254, 0.15);
+    --transition: all 0.3s ease;
+}
+
+/* Основные стили */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--background-white);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Контейнер для узкого десктоп дизайна */
+.container,
+.container-fluid {
+    max-width: 1200px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+/* Предотвращение переполнения контейнеров */
+* {
+    box-sizing: border-box;
+}
+
+.row {
+    margin-left: -10px;
+    margin-right: -10px;
+}
+
+.col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+.col-auto, .col-sm, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12,
+.col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+.col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12,
+.col-xl, .col-xl-1, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-10, .col-xl-11, .col-xl-12 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Улучшенная навигация */
+.navbar {
+    background: var(--background-white) !important;
+    box-shadow: var(--shadow-light);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(31, 117, 254, 0.1);
+    min-height: 80px;
+}
+
+.navbar .container {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav {
+    align-items: center;
+}
+
+.navbar-text {
+    margin-bottom: 0 !important;
+    line-height: 1.5;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+    text-decoration: none;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    margin: 0 8px;
+    padding: 8px 16px !important;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.navbar-nav .nav-link:hover {
+    background: rgba(31, 117, 254, 0.1);
+    color: var(--primary-color) !important;
+}
+
+/* Современные карточки */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color), #4A90E2);
+    color: white !important;
+    border: none;
+    padding: 1.5rem;
+    font-weight: 600;
+}
+
+.card-header * {
+    color: white !important;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Кнопки */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), #4A90E2);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: var(--shadow-light);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+    background: linear-gradient(135deg, #1B69E6, #4A90E2);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* Формы */
+.form-control,
+.form-select {
+    border: 2px solid #E5E5E5;
+    border-radius: var(--border-radius);
+    padding: 12px 16px;
+    transition: var(--transition);
+    font-size: 0.95rem;
+    height: 48px;
+    min-height: 48px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(31, 117, 254, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+/* Алерты */
+.alert {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Таблицы */
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.table th {
+    background: var(--primary-color);
+    color: white !important;
+    font-weight: 600;
+    border: none;
+    padding: 1rem;
+}
+
+.table td {
+    padding: 1rem;
+    border-color: rgba(31, 117, 254, 0.1);
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background: rgba(31, 117, 254, 0.05);
+}
+
+/* Футер */
+footer {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+    border-top: 1px solid rgba(31, 117, 254, 0.1);
+    margin-top: 3rem !important;
+}
+
+/* Профессиональные улучшения */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(31, 117, 254, 0.15);
+    outline: none;
+}
+
+.btn {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(31, 117, 254, 0.15);
+}
+
+/* Улучшенная пагинация */
+.pagination .page-link {
+    border-radius: var(--border-radius);
+    margin: 0 2px;
+    border: 1px solid rgba(31, 117, 254, 0.2);
+    color: var(--primary-color);
+}
+
+.pagination .page-link:hover {
+    background: rgba(31, 117, 254, 0.1);
+    border-color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Улучшенные фильтры */
+.filters .form-control,
+.filters .form-select {
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(31, 117, 254, 0.2);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container,
+    .container-fluid {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+    
+    .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .col, [class*="col-"] {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .text-nowrap-custom {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 576px) {
+    .container,
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Улучшенные теги навыков */
+.badge {
+    background: linear-gradient(135deg, var(--primary-color), #4A90E2);
+    color: white !important;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin: 2px;
+    display: inline-block;
+}
+
+/* Современные ссылки */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: #1B69E6;
+    text-decoration: none;
+}
+
+/* Предотвращение переносов текста и переполнения */
+.text-truncate-custom {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.text-nowrap-custom {
+    white-space: nowrap;
+}
+
+/* Адаптивные размеры текста */
+h1, h2, h3, h4, h5, h6 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Ограничение ширины для длинных ссылок и текста */
+.card-title a,
+.resume-item h3 a {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Фиксированные размеры для профессионального вида */
+.card {
+    min-height: 200px;
+}
+
+.card-body {
+    overflow: hidden;
+}
+
+.badge {
+    white-space: nowrap;
+    margin: 2px 4px 2px 0;
+}
+
+/* Улучшенная навигация с фиксированными размерами */
+.navbar-nav .nav-link {
+    padding: 8px 12px !important;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+.navbar-brand {
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+/* Отступ между хедером и контентом */
+main {
+    margin-top: 2rem;
+}
+
+/* Профессиональные отступы */
+.mt-4 {
+    margin-top: 2rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 2rem !important;
+}
+
+.py-4 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+/* Загрузка */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(31, 117, 254, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Резюме карточки */
+.resume-item {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+}
+
+.resume-item:hover,
+.clickable-card:hover .resume-item {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.clickable-card {
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
+}
+
+.clickable-card:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Фото резюме */
+.resume-photo-wrapper {
+    width: 100%;
+    max-width: 120px;
+    margin: 0 auto;
+}
+
+.resume-photo {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    border: 3px solid #f8f9fa;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+}
+
+.resume-photo:hover {
+    box-shadow: var(--shadow-medium);
+    transform: scale(1.02);
+}
+
+.resume-photo-placeholder {
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 3rem;
+    border: 3px solid #f8f9fa;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+}
+
+.resume-photo-placeholder:hover {
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+}
+
+@media (max-width: 768px) {
+    .resume-photo-wrapper {
+        max-width: 80px;
+        margin-bottom: 1rem;
+    }
+    
+    .resume-photo,
+    .resume-photo-placeholder {
+        height: 80px;
+    }
+    
+    .resume-photo-placeholder {
+        font-size: 2rem;
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Обеспечиваем белый текст на синем фоне */
+.page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.page-item.active .page-link span {
+    color: white !important;
+}
+
+.bg-primary, .bg-primary * {
+    color: white !important;
+}
+
+.btn-primary, .btn-primary * {
+    color: white !important;
+}
+
+.card-header, .card-header * {
+    color: white !important;
+}
+
+/* Любой элемент с синим фоном должен иметь белый текст */
+[class*="bg-primary"], 
+[class*="btn-primary"],
+.page-item.active .page-link {
+    color: white !important;
+}
+
+[class*="bg-primary"] *,
+[class*="btn-primary"] *,
+.page-item.active .page-link * {
+    color: white !important;
+}

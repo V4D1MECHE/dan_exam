@@ -47,6 +47,12 @@ class Resume(models.Model):
         ('EUR', 'Евро'),
     ]
     
+    CURRENCY_SYMBOLS = {
+        'RUB': '₽',
+        'USD': '$',
+        'EUR': '€',
+    }
+    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="resumes")
     template = models.ForeignKey(ResumeTemplate, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Шаблон", related_name="resumes")
     title = models.CharField(max_length=200, verbose_name="Должность")
@@ -75,6 +81,9 @@ class Resume(models.Model):
     
     def get_absolute_url(self):
         return reverse('resume_detail', args=[str(self.id)])
+    
+    def get_currency_symbol(self):
+        return self.CURRENCY_SYMBOLS.get(self.currency, '₽')
     
     def save(self, *args, **kwargs):
         """Переопределенный метод save для демонстрации"""
@@ -199,37 +208,6 @@ class Education(models.Model):
         return f"{self.institution_name} - {self.field_of_study}"
 
 
-class SkillTag(models.Model):
-    """Теги навыков для группировки"""
-    name = models.CharField(max_length=50, unique=True, verbose_name="Название тега")
-    description = models.TextField(blank=True, verbose_name="Описание")
-    color = models.CharField(max_length=7, default='#007bff', verbose_name="Цвет")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    
-    class Meta:
-        verbose_name = "Тег навыка"
-        verbose_name_plural = "Теги навыков"
-        ordering = ['name']
-    
-    def __str__(self):
-        return self.name
-
-
-class SkillTagRelation(models.Model):
-    """Промежуточная модель для связи навыков и тегов"""
-    skill = models.ForeignKey('Skill', on_delete=models.CASCADE, verbose_name="Навык")
-    tag = models.ForeignKey(SkillTag, on_delete=models.CASCADE, verbose_name="Тег")
-    relevance = models.IntegerField(default=100, verbose_name="Релевантность")
-    added_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
-    
-    class Meta:
-        verbose_name = "Связь навык-тег"
-        verbose_name_plural = "Связи навык-тег"
-        unique_together = ['skill', 'tag']
-        ordering = ['-relevance']
-    
-    def __str__(self):
-        return f"{self.skill.name} - {self.tag.name} ({self.relevance}%)"
 
 
 class Skill(models.Model):
@@ -254,9 +232,10 @@ class Skill(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='TECHNICAL', verbose_name="Категория")
     level = models.IntegerField(choices=LEVEL_CHOICES, default=3, verbose_name="Уровень")
     is_key_skill = models.BooleanField(default=False, verbose_name="Ключевой навык")
+    color = models.CharField(max_length=7, default='#007bff', verbose_name="Цвет")
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    tags = models.ManyToManyField(SkillTag, through='SkillTagRelation', related_name='skills', verbose_name="Теги")
+    # Убираем связь с SkillTag - теперь навык сам является тегом
     
     class Meta:
         verbose_name = "Навык"
@@ -322,6 +301,7 @@ class Certificate(models.Model):
     expiry_date = models.DateField(null=True, blank=True, verbose_name="Дата истечения")
     credential_id = models.CharField(max_length=100, blank=True, verbose_name="ID сертификата")
     credential_url = models.URLField(blank=True, verbose_name="Ссылка на сертификат")
+    certificate_file = models.FileField(upload_to='certificates/', blank=True, verbose_name="Файл сертификата")
     description = models.TextField(blank=True, verbose_name="Описание")
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")

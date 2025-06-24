@@ -4,6 +4,31 @@
     {% if skill %}Редактировать навык{% else %}Добавить навык{% endif %}
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .tag-card {
+        cursor: pointer;
+        border: 2px solid transparent !important;
+    }
+    .tag-card:hover {
+        border-color: #007bff !important;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+        transform: translateY(-2px);
+    }
+    .tag-card input[type="checkbox"]:checked + .form-check-label .badge {
+        transform: scale(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .tag-card input[type="checkbox"] {
+        transform: scale(1.2);
+    }
+    .tag-card:has(input[type="checkbox"]:checked) {
+        border-color: #28a745 !important;
+        background-color: #f8fff9;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h2>{% if skill %}Редактировать навык{% else %}Добавить навык{% endif %}</h2>
@@ -18,7 +43,8 @@
             </div>
         {% endif %}
         
-        <div class="row">
+        <!-- Основные поля навыка -->
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="mb-3">
                     <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
@@ -35,7 +61,9 @@
                         <div class="text-danger">{{ form.category.errors }}</div>
                     {% endif %}
                 </div>
-                
+            </div>
+            
+            <div class="col-md-6">
                 <div class="mb-3">
                     <label for="{{ form.level.id_for_label }}" class="form-label">{{ form.level.label }}</label>
                     {{ form.level }}
@@ -56,19 +84,8 @@
                     {% endif %}
                 </div>
             </div>
-            
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">{{ form.tags.label }}</label>
-                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                        {{ form.tags }}
-                    </div>
-                    {% if form.tags.errors %}
-                        <div class="text-danger">{{ form.tags.errors }}</div>
-                    {% endif %}
-                </div>
-            </div>
         </div>
+        
         
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">

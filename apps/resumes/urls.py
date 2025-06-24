@@ -16,6 +16,7 @@ urlpatterns = [
     path('resume/<int:resume_pk>/skill/create/', views.skill_create, name='skill_create'),
     path('skill/<int:pk>/update/', views.skill_update, name='skill_update'),
     path('skill/<int:pk>/delete/', views.skill_delete, name='skill_delete'),
+    path('resume/<int:resume_pk>/manage-skills/', views.manage_resume_skills, name='manage_resume_skills'),
     
     # CRUD для опыта работы
     path('resume/<int:resume_pk>/work-experience/create/', views.WorkExperienceCreateView.as_view(), name='work_experience_create'),
@@ -24,11 +25,20 @@ urlpatterns = [
     path('resume/<int:resume_pk>/education/create/', views.EducationCreateView.as_view(), name='education_create'),
     
     # CRUD для контактов
-    path('resume/<int:resume_pk>/contact/create/', views.ContactCreateView.as_view(), name='contact_create'),
+    path('resume/<int:resume_pk>/contact/create/', views.contact_create, name='contact_create'),
+    path('contact/<int:pk>/update/', views.contact_update, name='contact_update'),
+    path('contact/<int:pk>/delete/', views.contact_delete, name='contact_delete'),
     
-    # Управление тегами навыков
-    path('skill-tags/', views.SkillTagListView.as_view(), name='skilltag_list'),
-    path('skill-tags/create/', views.SkillTagCreateView.as_view(), name='skilltag_create'),
+    # CRUD для языков
+    path('resume/<int:resume_pk>/language/create/', views.language_create, name='language_create'),
+    path('language/<int:pk>/update/', views.language_update, name='language_update'),
+    path('language/<int:pk>/delete/', views.language_delete, name='language_delete'),
+    
+    # Управление тегами навыков - COMMENTED OUT: SkillTag models no longer exist
+    # path('skill-tags/', views.SkillTagListView.as_view(), name='skilltag_list'),
+    # path('skill-tags/create/', views.SkillTagCreateView.as_view(), name='skilltag_create'),
+    # path('skill-tags/<int:pk>/update/', views.SkillTagUpdateView.as_view(), name='skilltag_update'),
+    # path('skill-tags/<int:pk>/delete/', views.SkillTagDeleteView.as_view(), name='skilltag_delete'),
     
     # Оптимизированные views
     path('optimized/', views.OptimizedResumeListView.as_view(), name='optimized_resume_list'),

@@ -1,11 +1,34 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Resume, Skill, WorkExperience, Education, Contact, SkillTag, SkillTagRelation
+from .models import Resume, Skill, WorkExperience, Education, Contact, Language
 import re
 
 
 class ResumeForm(forms.ModelForm):
     """Форма для создания и редактирования резюме"""
+    
+    # Пример forms.CharField с виджетом Textarea
+    additional_info = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Дополнительная информация...'
+        }),
+        required=False,
+        label='Дополнительная информация',
+        help_text='Любая дополнительная информация о вас'
+    )
+    
+    # Поле для быстрого добавления навыков на основе цветовых категорий
+    skills = forms.ModelMultipleChoiceField(
+        queryset=Skill.objects.none(),  # Пустой queryset, будет обновлен в __init__
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-check-input'
+        }),
+        label='Навыки',
+        help_text='Выберите навыки для резюме'
+    )
     
     class Meta:
         model = Resume
@@ -52,6 +75,11 @@ class ResumeForm(forms.ModelForm):
                 raise ValidationError('Название должности должно содержать минимум 3 символа')
         return title
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Обновляем queryset для skills, чтобы получить актуальный список навыков
+        self.fields['skills'].queryset = Skill.objects.all()
+    
     def clean_salary_from(self):
         """Валидация минимальной зарплаты"""
         salary = self.cleaned_data.get('salary_from')
@@ -82,30 +110,43 @@ class ResumeForm(forms.ModelForm):
         if commit:
             resume.save()
             self.save_m2m()  # Сохраняем связи many-to-many
+            
+            # Создаем навыки на основе выбранных навыков
+            selected_skills = self.cleaned_data.get('skills', [])
+            for skill_template in selected_skills:
+                # Создаем копию навыка для данного резюме
+                Skill.objects.create(
+                    resume=resume,
+                    name=skill_template.name,
+                    category=skill_template.category,
+                    level=3,  # Средний уровень по умолчанию
+                    color=skill_template.color,
+                    is_key_skill=True,  # Основные навыки считаем ключевыми
+                    order=0
+                )
         
         return resume
 
 
 class SkillForm(forms.ModelForm):
     """Форма для добавления навыков"""
-    tags = forms.ModelMultipleChoiceField(
-        queryset=SkillTag.objects.all(),
-        required=False,
-        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
-        label='Теги'
-    )
     
     class Meta:
         model = Skill
-        fields = ['name', 'category', 'level', 'is_key_skill', 'tags']
+        fields = ['name', 'category', 'level', 'is_key_skill', 'color']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Python'
+                'placeholder': 'Например: Python, React, SQL'
             }),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'level': forms.Select(attrs={'class': 'form-select'}),
             'is_key_skill': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'color': forms.TextInput(attrs={
+                'class': 'form-control',
+                'type': 'color',
+                'value': '#007bff'
+            }),
         }
     
     def clean_name(self):
@@ -118,24 +159,6 @@ class SkillForm(forms.ModelForm):
             if not re.match(r'^[\w\s\-\+\#\.]+$', name):
                 raise ValidationError('Название навыка содержит недопустимые символы')
         return name
-    
-    def save(self, commit=True):
-        """Сохранение с обработкой тегов"""
-        skill = super().save(commit=False)
-        
-        if commit:
-            skill.save()
-            # Обрабатываем теги
-            if 'tags' in self.cleaned_data:
-                skill.tags.clear()
-                for tag in self.cleaned_data['tags']:
-                    SkillTagRelation.objects.create(
-                        skill=skill,
-                        tag=tag,
-                        relevance=100
-                    )
-        
-        return skill
 
 
 class WorkExperienceForm(forms.ModelForm):
@@ -173,6 +196,7 @@ class WorkExperienceForm(forms.ModelForm):
                 'placeholder': 'Основные достижения на данной позиции'
             }),
         }
+    
     
     def clean(self):
         """Валидация дат"""
@@ -295,30 +319,104 @@ class ContactForm(forms.ModelForm):
         return contact
 
 
-class SkillTagForm(forms.ModelForm):
-    """Форма для тегов навыков"""
+class LanguageForm(forms.ModelForm):
+    """Форма для языков"""
     
     class Meta:
-        model = SkillTag
-        fields = ['name', 'description', 'color']
+        model = Language
+        fields = ['name', 'level', 'is_native']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Backend'
+                'placeholder': 'Например: Английский, Русский'
             }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 2
-            }),
-            'color': forms.TextInput(attrs={
-                'class': 'form-control',
-                'type': 'color'
-            }),
+            'level': forms.Select(attrs={'class': 'form-select'}),
+            'is_native': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
-    def clean_color(self):
-        """Валидация цвета"""
-        color = self.cleaned_data.get('color')
-        if color and not re.match(r'^#[0-9A-Fa-f]{6}$', color):
-            raise ValidationError('Введите корректный цвет в формате #RRGGBB')
-        return color
+    def clean_name(self):
+        """Валидация названия языка"""
+        name = self.cleaned_data.get('name')
+        if name:
+            # Убираем лишние пробелы и делаем первую букву заглавной
+            name = ' '.join(word.capitalize() for word in name.split())
+            # Проверяем на валидные символы (только буквы и пробелы)
+            if not re.match(r'^[a-zA-Zа-яА-Я\s]+$', name):
+                raise ValidationError('Название языка должно содержать только буквы')
+        return name
+
+
+
+
+class ResumeSkillsForm(forms.Form):
+    """Форма для управления навыками резюме через чекбоксы"""
+    
+    def __init__(self, *args, **kwargs):
+        self.resume = kwargs.pop('resume', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.resume:
+            # Получаем все существующие уникальные навыки для выбора
+            all_skill_names = Skill.objects.values_list('name', flat=True).distinct()
+            current_skill_names = set(
+                self.resume.skills.values_list('name', flat=True)
+            )
+            
+            # Создаем поле для каждого уникального навыка
+            for skill_name in all_skill_names:
+                field_name = f'skill_{skill_name.replace(" ", "_").lower()}'
+                # Получаем пример навыка для цвета
+                sample_skill = Skill.objects.filter(name=skill_name).first()
+                self.fields[field_name] = forms.BooleanField(
+                    required=False,
+                    label=skill_name,
+                    initial=skill_name in current_skill_names,
+                    widget=forms.CheckboxInput(attrs={
+                        'class': 'form-check-input',
+                        'data-skill-name': skill_name,
+                        'data-skill-color': sample_skill.color if sample_skill else '#007bff'
+                    })
+                )
+                # Добавляем информацию о навыке в поле для использования в шаблоне
+                self.fields[field_name].skill_name = skill_name
+                self.fields[field_name].skill_color = sample_skill.color if sample_skill else '#007bff'
+    
+    def save(self):
+        if not self.resume:
+            return
+        
+        # Получаем выбранные навыки
+        selected_skill_names = []
+        for field_name, value in self.cleaned_data.items():
+            if field_name.startswith('skill_') and value:
+                skill_name = self.fields[field_name].skill_name
+                selected_skill_names.append(skill_name)
+        
+        # Удаляем все существующие навыки
+        self.resume.skills.all().delete()
+        
+        # Создаем новые навыки для выбранных
+        for skill_name in selected_skill_names:
+            # Получаем образец навыка для копирования параметров
+            sample_skill = Skill.objects.filter(name=skill_name).first()
+            if sample_skill:
+                Skill.objects.create(
+                    resume=self.resume,
+                    name=skill_name,
+                    category=sample_skill.category,
+                    level=3,  # Средний уровень по умолчанию
+                    color=sample_skill.color,
+                    is_key_skill=True,
+                    order=0
+                )
+            else:
+                # Создаем новый навык, если образца нет
+                Skill.objects.create(
+                    resume=self.resume,
+                    name=skill_name,
+                    category='TECHNICAL',
+                    level=3,
+                    color='#007bff',
+                    is_key_skill=True,
+                    order=0
+                )

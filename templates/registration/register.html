@@ -1,31 +1,192 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        form { max-width: 400px; margin: 0 auto; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 5px 0; }
-        button { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h2>Регистрация</h2>
+{% extends 'base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: -2rem -15px 0 -15px;
+        padding: 2rem 15px;
+    }
     
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 500px;
+        backdrop-filter: blur(10px);
+    }
     
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Зарегистрироваться</button>
-    </form>
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
     
-    <p><a href="{% url 'login' %}">Уже есть аккаунт? Войти</a></p>
-</body>
-</html>
+    .auth-header h2 {
+        color: var(--primary-color, #1F75FE);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    
+    .auth-header p {
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-floating .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem 0.75rem;
+        height: auto;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating .form-control:focus {
+        border-color: var(--primary-color, #1F75FE);
+        box-shadow: 0 0 0 0.2rem rgba(31, 117, 254, 0.25);
+    }
+    
+    .form-floating label {
+        padding: 1rem 0.75rem;
+        color: #6c757d;
+    }
+    
+    .btn-auth {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+    
+    .auth-link {
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .auth-link a {
+        color: var(--primary-color, #1F75FE);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .auth-link a:hover {
+        color: #1B69E6;
+        text-decoration: underline;
+    }
+    
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .brand-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+    
+    .help-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="bi bi-person-plus-fill brand-icon"></i>
+            <h2>Создать аккаунт</h2>
+            <p>Присоединяйтесь к платформе Karrton</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'success' %}success-message{% else %}error-message{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if form.errors %}
+        <div class="error-message">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    {{ error }}<br>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-floating">
+                    {{ field }}
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == 'email' %}Email
+                        {% elif field.name == 'first_name' %}Имя
+                        {% elif field.name == 'last_name' %}Фамилия
+                        {% elif field.name == 'password1' %}Пароль
+                        {% elif field.name == 'password2' %}Подтверждение пароля
+                        {% else %}{{ field.label }}{% endif %}
+                    </label>
+                    {% if field.help_text %}
+                    <div class="help-text">{{ field.help_text }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-auth">
+                <i class="bi bi-person-check me-2"></i>
+                Зарегистрироваться
+            </button>
+        </form>
+        
+        <div class="auth-link">
+            <p>Уже есть аккаунт? <a href="/auth/login/">Войти</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

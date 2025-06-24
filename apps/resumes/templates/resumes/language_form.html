@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+
+{% block title %}{{ title }} - {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ title }}</h4>
+                    <small class="text-muted">Резюме: {{ resume.title }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }}
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.name.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Например: Английский, Русский, Немецкий
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">
+                                    {{ form.level.label }}
+                                </label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small">
+                                        {{ form.level.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Уровень владения языком по шкале CEFR
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_native }}
+                                <label class="form-check-label" for="{{ form.is_native.id_for_label }}">
+                                    {{ form.is_native.label }}
+                                </label>
+                            </div>
+                            {% if form.is_native.errors %}
+                                <div class="text-danger small">
+                                    {{ form.is_native.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Отметьте, если это ваш родной язык
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Сохранить
+                            </button>
+                            <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Справочная информация о уровнях -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Справка по уровням владения языком
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row small">
+                        <div class="col-md-6">
+                            <strong>A1 - Начальный:</strong> Понимаю простые фразы<br>
+                            <strong>A2 - Элементарный:</strong> Могу общаться на простые темы<br>
+                            <strong>B1 - Средний:</strong> Понимаю основные идеи текстов
+                        </div>
+                        <div class="col-md-6">
+                            <strong>B2 - Выше среднего:</strong> Свободно общаюсь на большинство тем<br>
+                            <strong>C1 - Продвинутый:</strong> Эффективно использую язык<br>
+                            <strong>C2 - Носитель:</strong> Практически полное владение языком
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,9 +1,17 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from io import BytesIO
 from .models import (
     ResumeTemplate, Resume, Contact, WorkExperience, Education,
-    Skill, Language, Award, Certificate, Recommendation, SharedLink,
-    SkillTag, SkillTagRelation
+    Skill, Language, Award, Certificate, Recommendation, SharedLink
 )
 
 
@@ -18,7 +26,7 @@ class ResumeTemplateAdmin(admin.ModelAdmin):
     
     @admin.display(description='Использований')
     def get_usage_count(self, obj):
-        return obj.resume_set.count()
+        return obj.resumes.count()
     
     fieldsets = (
         ('Основная информация', {
@@ -84,6 +92,135 @@ class SkillInline(admin.TabularInline):
     fields = ['name', 'category', 'level', 'is_key_skill', 'order']
 
 
+def export_resumes_to_pdf(modeladmin, request, queryset):
+    """Экспорт выбранных резюме в PDF"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="resumes.pdf"'
+    
+    # Создаем PDF документ
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    
+    # Регистрируем шрифт Inter для поддержки кириллицы
+    try:
+        # Попробуем найти системный шрифт Inter или используем DejaVu Sans как fallback
+        import os
+        inter_font_paths = [
+            '/usr/share/fonts/truetype/inter/Inter-Regular.ttf',
+            '/System/Library/Fonts/Inter-Regular.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/System/Library/Fonts/DejaVuSans.ttf'
+        ]
+        
+        font_registered = False
+        for font_path in inter_font_paths:
+            if os.path.exists(font_path):
+                pdfmetrics.registerFont(TTFont('Inter', font_path))
+                font_registered = True
+                break
+        
+        if not font_registered:
+            # Fallback на встроенный шрифт с поддержкой Unicode
+            font_name = 'Helvetica'
+        else:
+            font_name = 'Inter'
+    except:
+        font_name = 'Helvetica'
+    
+    # Получаем стили и настраиваем кодировку
+    styles = getSampleStyleSheet()
+    
+    # Создаем кастомные стили с поддержкой Unicode и шрифтом Inter
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Title'],
+        fontName=font_name,
+        fontSize=16,
+        encoding='utf-8'
+    )
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading1'],
+        fontName=font_name,
+        fontSize=14,
+        encoding='utf-8'
+    )
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontName=font_name,
+        fontSize=10,
+        encoding='utf-8'
+    )
+    
+    story = []
+    
+    # Заголовок
+    title_text = f"Экспорт резюме ({queryset.count()} шт.)"
+    title = Paragraph(title_text, title_style)
+    story.append(title)
+    story.append(Spacer(1, 0.5*cm))
+    
+    # Обрабатываем каждое резюме
+    for resume in queryset.select_related('user'):
+        # Заголовок резюме
+        resume_title_text = f"<b>{resume.title}</b>"
+        resume_title = Paragraph(resume_title_text, heading_style)
+        story.append(resume_title)
+        
+        # Информация о пользователе
+        user_name = resume.user.get_full_name() or resume.user.email
+        user_info = f"Автор: {user_name}"
+        story.append(Paragraph(user_info, normal_style))
+        
+        # Город и тип занятости
+        if resume.city:
+            city_text = f"Город: {resume.city}"
+            story.append(Paragraph(city_text, normal_style))
+        if resume.employment_type:
+            employment_text = f"Занятость: {resume.get_employment_type_display()}"
+            story.append(Paragraph(employment_text, normal_style))
+        
+        # Зарплата
+        if resume.salary_from or resume.salary_to:
+            salary_text = "Зарплата: "
+            currency_symbol = resume.get_currency_symbol()
+            if resume.salary_from and resume.salary_to:
+                salary_text += f"{resume.salary_from:,} - {resume.salary_to:,} {currency_symbol}"
+            elif resume.salary_from:
+                salary_text += f"от {resume.salary_from:,} {currency_symbol}"
+            elif resume.salary_to:
+                salary_text += f"до {resume.salary_to:,} {currency_symbol}"
+            story.append(Paragraph(salary_text, normal_style))
+        
+        # Краткое описание
+        if resume.summary:
+            description_text = f"Описание: {resume.summary[:200]}..."
+            story.append(Paragraph(description_text, normal_style))
+        
+        # Статус
+        status_text = f"Статус: {'Публичное' if resume.is_public else 'Приватное'}"
+        story.append(Paragraph(status_text, normal_style))
+        
+        # Дата создания
+        date_text = f"Создано: {resume.created_at.strftime('%d.%m.%Y')}"
+        story.append(Paragraph(date_text, normal_style))
+        
+        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph("=" * 50, normal_style))
+        story.append(Spacer(1, 0.3*cm))
+    
+    # Создаем PDF
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    
+    return response
+
+export_resumes_to_pdf.short_description = "Экспорт выбранных резюме в PDF"
+
+
 @admin.register(Resume)
 class ResumeAdmin(admin.ModelAdmin):
     list_display = ['title', 'user', 'template', 'city', 'employment_type', 'get_salary_range', 'is_public', 'is_active', 'created_at']
@@ -93,6 +230,7 @@ class ResumeAdmin(admin.ModelAdmin):
     raw_id_fields = ['user', 'template']
     readonly_fields = ['created_at', 'updated_at']
     date_hierarchy = 'created_at'
+    actions = [export_resumes_to_pdf]
     
     inlines = [ContactInline, WorkExperienceInline, EducationInline, SkillInline]
     
@@ -183,15 +321,20 @@ class EducationAdmin(admin.ModelAdmin):
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'level', 'resume', 'is_key_skill', 'order']
+    list_display = ['name', 'category', 'level', 'color_display', 'resume', 'is_key_skill', 'order']
     list_filter = ['category', 'level', 'is_key_skill']
     search_fields = ['name', 'resume__title', 'resume__user__email']
     list_display_links = ['name']
     raw_id_fields = ['resume']
     
+    @admin.display(description='Цвет')
+    def color_display(self, obj):
+        return f'<span style="display:inline-block;width:20px;height:20px;background-color:{obj.color};border:1px solid #ccc;border-radius:3px;"></span> {obj.color}'
+    color_display.allow_tags = True
+    
     fieldsets = (
         ('Основная информация', {
-            'fields': ('resume', 'name', 'category', 'level')
+            'fields': ('resume', 'name', 'category', 'level', 'color')
         }),
         ('Настройки', {
             'fields': ('is_key_skill', 'order')
@@ -312,44 +455,4 @@ class SharedLinkAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(SkillTag)
-class SkillTagAdmin(admin.ModelAdmin):
-    list_display = ['name', 'color', 'get_skills_count', 'created_at']
-    list_filter = ['created_at']
-    search_fields = ['name', 'description']
-    list_display_links = ['name']
-    readonly_fields = ['created_at']
-    
-    @admin.display(description='Количество навыков')
-    def get_skills_count(self, obj):
-        return obj.skills.count()
-    
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'description', 'color')
-        }),
-        ('Служебная информация', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-
-
-@admin.register(SkillTagRelation)
-class SkillTagRelationAdmin(admin.ModelAdmin):
-    list_display = ['skill', 'tag', 'relevance', 'added_at']
-    list_filter = ['tag', 'relevance', 'added_at']
-    search_fields = ['skill__name', 'tag__name']
-    list_display_links = ['skill', 'tag']
-    raw_id_fields = ['skill', 'tag']
-    readonly_fields = ['added_at']
-    
-    fieldsets = (
-        ('Связь', {
-            'fields': ('skill', 'tag', 'relevance')
-        }),
-        ('Служебная информация', {
-            'fields': ('added_at',),
-            'classes': ('collapse',)
-        }),
-    )
+# Убрали SkillTagAdmin и SkillTagRelationAdmin - теперь навык сам является тегом

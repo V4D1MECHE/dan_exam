@@ -18,7 +18,7 @@ class CustomUserAdmin(UserAdmin):
     
     @admin.display(description='Количество резюме')
     def get_resumes_count(self, obj):
-        return obj.resume_set.count()
+        return obj.resumes.count()
     
     fieldsets = (
         (None, {'fields': ('email', 'password')}),

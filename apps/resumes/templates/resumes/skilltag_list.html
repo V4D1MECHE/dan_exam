@@ -6,13 +6,13 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Теги навыков</h2>
-        <a href="{% url 'skilltag_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Создать тег
+        <a href="{% url 'resume_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Создать резюме
         </a>
     </div>
     
     <p class="text-muted">
-        Теги используются для группировки навыков. Демонстрирует ManyToManyField с параметром through.
+        Теги используются для группировки и категоризации навыков в резюме.
     </p>
     
     <div class="row">
@@ -37,12 +37,7 @@
                                 Навыков: {{ tag.skill_count }}
                             </small>
                             <div class="btn-group btn-group-sm">
-                                <a href="#" class="btn btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="#" class="btn btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                <span class="text-muted">Система тегов отключена</span>
                             </div>
                         </div>
                     </div>
@@ -51,8 +46,8 @@
         {% empty %}
             <div class="col-12">
                 <div class="alert alert-info">
-                    Теги навыков еще не созданы. 
-                    <a href="{% url 'skilltag_create' %}">Создать первый тег</a>
+                    Система тегов навыков отключена. 
+                    <a href="{% url 'resume_create' %}">Создать резюме</a>
                 </div>
             </div>
         {% endfor %}

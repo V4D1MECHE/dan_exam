@@ -89,7 +89,7 @@
         
         <div class="mb-3">
             <label for="{{ form.summary.id_for_label }}" class="form-label">{{ form.summary.label }}</label>
-            {{ form.summary }}
+            <textarea name="{{ form.summary.name }}" class="form-control" rows="5" placeholder="Расскажите о себе и своем опыте..." id="{{ form.summary.id_for_label }}">{{ form.summary.value|default:"" }}</textarea>
             {% if form.summary.errors %}
                 <div class="text-danger">{{ form.summary.errors }}</div>
             {% endif %}
@@ -107,7 +107,165 @@
             {% endif %}
         </div>
         
-        <div class="d-flex gap-2">
+        <!-- Секция контактов -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-telephone text-primary me-2"></i>
+                    Контакты
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ contact_formset.management_form }}
+                <div id="contact-formset">
+                    {% for form in contact_formset %}
+                    <div class="contact-form border rounded p-3 mb-3" style="{% if form.DELETE %}display: none;{% endif %}">
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.contact_type.label }}</label>
+                                {{ form.contact_type }}
+                                {% if form.contact_type.errors %}
+                                    <div class="text-danger small">{{ form.contact_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.value.label }}</label>
+                                {{ form.value }}
+                                {% if form.value.errors %}
+                                    <div class="text-danger small">{{ form.value.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.label.label }}</label>
+                                {{ form.label }}
+                                {% if form.label.errors %}
+                                    <div class="text-danger small">{{ form.label.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    {{ form.is_primary }}
+                                    <label class="form-check-label small">{{ form.is_primary.label }}</label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.is_visible }}
+                                    <label class="form-check-label small">{{ form.is_visible.label }}</label>
+                                </div>
+                                {% if form.DELETE %}
+                                <div class="form-check">
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label small text-danger">Удалить</label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addContactForm()">
+                    <i class="bi bi-plus"></i> Добавить контакт
+                </button>
+            </div>
+        </div>
+
+        <!-- Секция языков -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-translate text-primary me-2"></i>
+                    Языки
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ language_formset.management_form }}
+                <div id="language-formset">
+                    {% for form in language_formset %}
+                    <div class="language-form border rounded p-3 mb-3" style="{% if form.DELETE %}display: none;{% endif %}">
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.name.label }}</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.level.label }}</label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small">{{ form.level.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    {{ form.is_native }}
+                                    <label class="form-check-label">{{ form.is_native.label }}</label>
+                                </div>
+                                {% if form.DELETE %}
+                                <div class="form-check mt-2">
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label text-danger">Удалить</label>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addLanguageForm()">
+                    <i class="bi bi-plus"></i> Добавить язык
+                </button>
+            </div>
+        </div>
+
+        {% if form.instance.pk %}
+        <!-- Секция навыков для редактирования существующего резюме -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check text-primary me-2"></i>
+                    Навыки резюме
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 text-muted">Управляйте навыками для этого резюме</p>
+                    <a href="{% url 'manage_resume_skills' resume_pk=form.instance.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-gear"></i> Редактировать навыки
+                    </a>
+                </div>
+                
+                {% if form.instance.skills.all %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in form.instance.skills.all %}
+                    <span class="badge bg-primary text-white px-2 py-1">
+                        {{ skill.name }}
+                        {% if skill.is_key_skill %}<i class="bi bi-star-fill text-warning ms-1" title="Ключевой навык"></i>{% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">Навыки не добавлены. Нажмите "Редактировать навыки" для добавления.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-primary">
                 {% if form.instance.pk %}Сохранить изменения{% else %}Создать резюме{% endif %}
             </button>
@@ -115,4 +273,113 @@
         </div>
     </form>
 </div>
+
+<script>
+function addContactForm() {
+    const formset = document.getElementById('contact-formset');
+    const totalForms = document.getElementById('id_contact_set-TOTAL_FORMS');
+    const formNum = parseInt(totalForms.value);
+    
+    const newForm = document.createElement('div');
+    newForm.className = 'contact-form border rounded p-3 mb-3';
+    newForm.innerHTML = `
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">Тип контакта</label>
+                <select name="contact_set-${formNum}-contact_type" class="form-select" id="id_contact_set-${formNum}-contact_type">
+                    <option value="">---------</option>
+                    <option value="PHONE">Телефон</option>
+                    <option value="EMAIL">Email</option>
+                    <option value="TELEGRAM">Telegram</option>
+                    <option value="LINKEDIN">LinkedIn</option>
+                    <option value="GITHUB">GitHub</option>
+                    <option value="WEBSITE">Веб-сайт</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Значение</label>
+                <input type="text" name="contact_set-${formNum}-value" class="form-control" placeholder="Введите контактные данные" id="id_contact_set-${formNum}-value">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Подпись</label>
+                <input type="text" name="contact_set-${formNum}-label" class="form-control" placeholder="Подпись (необязательно)" id="id_contact_set-${formNum}-label">
+            </div>
+            <div class="col-md-2">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="contact_set-${formNum}-is_primary" class="form-check-input" id="id_contact_set-${formNum}-is_primary">
+                    <label class="form-check-label small">Основной</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="contact_set-${formNum}-is_visible" class="form-check-input" id="id_contact_set-${formNum}-is_visible" checked>
+                    <label class="form-check-label small">Видимый</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="contact_set-${formNum}-DELETE" class="form-check-input" id="id_contact_set-${formNum}-DELETE">
+                    <label class="form-check-label small text-danger">Удалить</label>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" name="contact_set-${formNum}-id" id="id_contact_set-${formNum}-id">
+    `;
+    
+    formset.appendChild(newForm);
+    totalForms.value = formNum + 1;
+}
+
+function addLanguageForm() {
+    const formset = document.getElementById('language-formset');
+    const totalForms = document.getElementById('id_language_set-TOTAL_FORMS');
+    const formNum = parseInt(totalForms.value);
+    
+    const newForm = document.createElement('div');
+    newForm.className = 'language-form border rounded p-3 mb-3';
+    newForm.innerHTML = `
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Язык</label>
+                <input type="text" name="language_set-${formNum}-name" class="form-control" placeholder="Например: Английский, Русский" id="id_language_set-${formNum}-name">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Уровень</label>
+                <select name="language_set-${formNum}-level" class="form-select" id="id_language_set-${formNum}-level">
+                    <option value="">---------</option>
+                    <option value="A1">A1 - Начальный</option>
+                    <option value="A2">A2 - Элементарный</option>
+                    <option value="B1">B1 - Средний</option>
+                    <option value="B2">B2 - Выше среднего</option>
+                    <option value="C1">C1 - Продвинутый</option>
+                    <option value="C2">C2 - Носитель</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="language_set-${formNum}-is_native" class="form-check-input" id="id_language_set-${formNum}-is_native">
+                    <label class="form-check-label">Родной</label>
+                </div>
+                <div class="form-check mt-2">
+                    <input type="checkbox" name="language_set-${formNum}-DELETE" class="form-check-input" id="id_language_set-${formNum}-DELETE">
+                    <label class="form-check-label text-danger">Удалить</label>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" name="language_set-${formNum}-id" id="id_language_set-${formNum}-id">
+    `;
+    
+    formset.appendChild(newForm);
+    totalForms.value = formNum + 1;
+}
+
+// Обработка DELETE чекбоксов
+document.addEventListener('change', function(e) {
+    if (e.target.name && e.target.name.includes('-DELETE')) {
+        const form = e.target.closest('.contact-form, .language-form');
+        if (e.target.checked) {
+            form.style.display = 'none';
+        } else {
+            form.style.display = 'block';
+        }
+    }
+});
+</script>
+
 {% endblock %}

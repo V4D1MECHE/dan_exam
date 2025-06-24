@@ -1,25 +1,179 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        form { max-width: 400px; margin: 0 auto; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 5px 0; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h2>Вход в систему</h2>
+{% extends 'base.html' %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: -2rem -15px 0 -15px;
+        padding: 2rem 15px;
+    }
     
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Войти</button>
-    </form>
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 450px;
+        backdrop-filter: blur(10px);
+    }
     
-    <p><a href="{% url 'register' %}">Нет аккаунта? Зарегистрироваться</a></p>
-</body>
-</html>
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-header h2 {
+        color: var(--primary-color, #1F75FE);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    
+    .auth-header p {
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-floating .form-control,
+    .form-floating input[type="text"],
+    .form-floating input[type="password"] {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 1rem 0.75rem;
+        height: auto;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        background-color: #fff;
+    }
+    
+    .form-floating .form-control:focus,
+    .form-floating input[type="text"]:focus,
+    .form-floating input[type="password"]:focus {
+        border-color: var(--primary-color, #1F75FE);
+        box-shadow: 0 0 0 0.2rem rgba(31, 117, 254, 0.25);
+        outline: none;
+    }
+    
+    .form-floating label {
+        padding: 1rem 0.75rem;
+        color: #6c757d;
+    }
+    
+    .btn-auth {
+        background: linear-gradient(135deg, var(--primary-color, #1F75FE), #4A90E2);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(31, 117, 254, 0.3);
+    }
+    
+    .auth-link {
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .auth-link a {
+        color: var(--primary-color, #1F75FE);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .auth-link a:hover {
+        color: #1B69E6;
+        text-decoration: underline;
+    }
+    
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .brand-icon {
+        font-size: 3rem;
+        color: var(--primary-color, #1F75FE);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="bi bi-person-circle brand-icon"></i>
+            <h2>Добро пожаловать!</h2>
+            <p>Войдите в свой аккаунт Karrton</p>
+        </div>
+        
+        {% if form.errors %}
+        <div class="error-message">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    {{ error }}<br>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-floating">
+                    {{ field }}
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == 'username' %}Имя пользователя
+                        {% elif field.name == 'password' %}Пароль
+                        {% else %}{{ field.label }}{% endif %}
+                    </label>
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary btn-auth">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Войти
+            </button>
+        </form>
+        
+        <div class="auth-link">
+            <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем класс form-control ко всем input полям в форме
+    const inputs = document.querySelectorAll('.form-floating input');
+    inputs.forEach(function(input) {
+        input.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}

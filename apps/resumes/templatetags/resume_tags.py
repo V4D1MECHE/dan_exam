@@ -48,12 +48,40 @@ def salary_format(value):
     # Преобразуем в int для корректного форматирования
     value = int(value)
     
+    # Добавим символ валюты в зависимости от того, что передано
+    symbol = '₽'  # по умолчанию рубли
+    
     if value >= 1000000:
-        return f"{value // 1000000}.{(value % 1000000) // 100000} млн ₽"
+        return f"{value // 1000000}.{(value % 1000000) // 100000} млн {symbol}"
     elif value >= 1000:
-        return f"{value // 1000} {value % 1000:03d} ₽"
+        return f"{value // 1000} {value % 1000:03d} {symbol}"
     else:
-        return f"{value} ₽"
+        return f"{value} {symbol}"
+
+
+@register.filter
+def salary_format_with_currency(value, currency='RUB'):
+    """Шаблонный фильтр для форматирования зарплаты с учетом валюты"""
+    if not value:
+        return "Не указана"
+    
+    # Преобразуем в int для корректного форматирования
+    value = int(value)
+    
+    # Символы валют
+    currency_symbols = {
+        'RUB': '₽',
+        'USD': '$',
+        'EUR': '€',
+    }
+    symbol = currency_symbols.get(currency, '₽')
+    
+    if value >= 1000000:
+        return f"{value // 1000000}.{(value % 1000000) // 100000} млн {symbol}"
+    elif value >= 1000:
+        return f"{value // 1000} {value % 1000:03d} {symbol}"
+    else:
+        return f"{value} {symbol}"
 
 
 @register.filter

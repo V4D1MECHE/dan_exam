@@ -1,14 +1,136 @@
 {% extends 'base.html' %}
 
-{% block title %}Оптимизированный список резюме{% endblock %}
+{% block title %}Подробный список резюме{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters { 
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 20px; 
+        margin-bottom: 30px; 
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: 1px solid rgba(31, 117, 254, 0.1);
+    }
+    .search-box {
+        border-radius: 25px;
+        padding: 12px 20px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .search-box:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Оптимизированный список резюме</h2>
+    <h2>Список резюме</h2>
     <p class="text-muted">
-        Эта страница демонстрирует использование select_related() и prefetch_related() для оптимизации запросов к БД.
-        Откройте Django Debug Toolbar для просмотра количества SQL запросов.
+        Профессиональные резюме с полной информацией о навыках и опыте работы.
     </p>
+    
+    <!-- Фильтры и поиск -->
+    <div class="filters">
+        <h4 class="mb-3"><i class="bi bi-funnel text-primary me-2"></i>Поиск и фильтры</h4>
+        <form method="get">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-primary"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control search-box border-start-0" 
+                               name="search" 
+                               value="{{ search_query|default:'' }}" 
+                               placeholder="🔍 Поиск по имени, должности или навыкам..."
+                               autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" 
+                           class="form-control" 
+                           name="city" 
+                           value="{{ city|default:'' }}" 
+                           placeholder="Город">
+                </div>
+                <div class="col-md-2">
+                    <select name="employment_type" class="form-select">
+                        <option value="">Тип занятости</option>
+                        <option value="FULL" {% if employment_type == 'FULL' %}selected{% endif %}>Полная</option>
+                        <option value="PART" {% if employment_type == 'PART' %}selected{% endif %}>Частичная</option>
+                        <option value="REMOTE" {% if employment_type == 'REMOTE' %}selected{% endif %}>Удаленная</option>
+                        <option value="HYBRID" {% if employment_type == 'HYBRID' %}selected{% endif %}>Гибридная</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Найти
+                    </button>
+                </div>
+            </div>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="-updated_at" {% if sort_by == '-updated_at' %}selected{% endif %}>По дате обновления</option>
+                        <option value="salary" {% if sort_by == 'salary' %}selected{% endif %}>По зарплате</option>
+                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>По дате создания</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>По имени</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="exclude_no_photo" value="1" id="exclude_no_photo" {% if exclude_no_photo == '1' %}checked{% endif %}>
+                        <label class="form-check-label" for="exclude_no_photo">
+                            Только с фото
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="key_skills_only" value="1" id="key_skills_only" {% if key_skills_only == '1' %}checked{% endif %}>
+                        <label class="form-check-label" for="key_skills_only">
+                            С ключевыми навыками
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    {% if search_query or city or employment_type or exclude_no_photo or key_skills_only %}
+                    <a href="{% url 'optimized_resume_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle me-1"></i>Сбросить
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Результаты поиска -->
+    {% if search_query or city or employment_type or exclude_no_photo or key_skills_only %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Результаты поиска:</strong>
+        {% if search_query %}
+            по запросу "<em>{{ search_query }}</em>"
+        {% endif %}
+        {% if city %}
+            в городе "{{ city }}"
+        {% endif %}
+        {% if employment_type %}
+            с типом занятости "{{ employment_type }}"
+        {% endif %}
+        {% if exclude_no_photo %}
+            только с фото
+        {% endif %}
+        {% if key_skills_only %}
+            с ключевыми навыками
+        {% endif %}
+        — найдено {{ resumes|length }} резюме.
+    </div>
+    {% endif %}
     
     <!-- Статистика -->
     <div class="row mb-4">
@@ -44,78 +166,58 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0">{{ resume.title }}</h5>
-                        <small class="text-muted">
-                            <!-- Использование select_related - нет дополнительного запроса -->
-                            {{ resume.user.get_full_name }}
+                        <h5 class="mb-0 text-truncate-custom">{{ resume.title }}</h5>
+                        <small class="d-flex align-items-center" style="color: white !important;">
+                            <span>{{ resume.user.get_full_name }}</span>
                             {% if resume.template %}
-                                | Шаблон: {{ resume.template.name }}
+                                <span class="mx-2">|</span>
+                                <span>{{ resume.template.name }}</span>
                             {% endif %}
                         </small>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">
-                            {% if resume.city %}<i class="bi bi-geo-alt"></i> {{ resume.city }}<br>{% endif %}
-                            {% if resume.employment_type %}<i class="bi bi-briefcase"></i> {{ resume.get_employment_type_display }}<br>{% endif %}
+                        <div class="card-text">
+                            {% if resume.city %}<p class="mb-1 text-nowrap-custom"><i class="bi bi-geo-alt text-primary me-2"></i>{{ resume.city }}</p>{% endif %}
+                            {% if resume.employment_type %}<p class="mb-1 text-nowrap-custom"><i class="bi bi-briefcase text-primary me-2"></i>{{ resume.get_employment_type_display }}</p>{% endif %}
                             {% if resume.salary_from %}
-                                <i class="bi bi-cash"></i> 
-                                от {{ resume.salary_from }} 
-                                {% if resume.salary_to %}до {{ resume.salary_to }}{% endif %}
-                                {{ resume.get_currency_display }}
+                                <p class="mb-1 text-nowrap-custom text-success">
+                                    <i class="bi bi-cash text-primary me-2"></i>
+                                    от {{ resume.salary_from }} 
+                                    {% if resume.salary_to %}до {{ resume.salary_to }}{% endif %}
+                                    {{ resume.get_currency_symbol }}
+                                </p>
                             {% endif %}
-                        </p>
+                        </div>
                         
-                        <!-- Использование prefetch_related для навыков -->
                         {% if resume.skills.all %}
-                            <h6>Навыки ({{ resume.skills.count }}):</h6>
-                            <div class="mb-2">
-                                {% for skill in resume.skills.all|slice:":5" %}
-                                    <span class="badge bg-primary me-1">
-                                        {{ skill.name }} ({{ skill.get_level_display }})
-                                        <!-- Теги навыков через промежуточную модель -->
-                                        {% if skill.tags.all %}
-                                            <small>
-                                                [{% for tag in skill.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}]
-                                            </small>
-                                        {% endif %}
+                            <h6 class="mb-2">Навыки ({{ resume.skills.count }}):</h6>
+                            <div class="mb-3" style="max-height: 60px; overflow: hidden;">
+                                {% for skill in resume.skills.all|slice:":4" %}
+                                    <span class="badge me-1 mb-1" style="font-size: 0.75rem;">
+                                        {{ skill.name|truncatechars:12 }}
                                     </span>
                                 {% endfor %}
-                                {% if resume.skills.count > 5 %}
-                                    <span class="text-muted">и еще {{ resume.skills.count|add:"-5" }}</span>
+                                {% if resume.skills.count > 4 %}
+                                    <span class="text-muted small">+{{ resume.skills.count|add:"-4" }}</span>
                                 {% endif %}
                             </div>
                         {% endif %}
                         
-                        <!-- Использование prefetch_related для опыта работы -->
                         {% if resume.work_experiences.all %}
-                            <h6>Опыт работы ({{ resume.work_experiences.count }}):</h6>
-                            <ul class="list-unstyled">
+                            <h6 class="mb-2">Опыт ({{ resume.work_experiences.count }}):</h6>
+                            <div class="mb-2" style="max-height: 40px; overflow: hidden;">
                                 {% for exp in resume.work_experiences.all|slice:":2" %}
-                                    <li><small>{{ exp.company_name }} - {{ exp.position }}</small></li>
+                                    <small class="d-block text-truncate-custom">{{ exp.company_name|truncatechars:20 }} - {{ exp.position|truncatechars:15 }}</small>
                                 {% endfor %}
                                 {% if resume.work_experiences.count > 2 %}
-                                    <li><small class="text-muted">и еще {{ resume.work_experiences.count|add:"-2" }}</small></li>
+                                    <small class="text-muted">+{{ resume.work_experiences.count|add:"-2" }}</small>
                                 {% endif %}
-                            </ul>
-                        {% endif %}
-                        
-                        <!-- Использование prefetch_related для контактов -->
-                        {% if resume.contacts.all %}
-                            <h6>Контакты:</h6>
-                            <div>
-                                {% for contact in resume.contacts.all|slice:":3" %}
-                                    <small>
-                                        <i class="bi bi-{{ contact.contact_type|lower }}"></i>
-                                        {{ contact.get_contact_type_display }}
-                                    </small>
-                                    {% if not forloop.last %} | {% endif %}
-                                {% endfor %}
                             </div>
                         {% endif %}
                     </div>
                     <div class="card-footer">
                         <a href="{% url 'resume_detail_optimized' resume.pk %}" class="btn btn-sm btn-primary">
-                            Подробнее (оптимизированно)
+                            Подробнее
                         </a>
                     </div>
                 </div>
@@ -140,9 +242,9 @@
                 {% endif %}
                 
                 <li class="page-item active">
-                    <span class="page-link">
+                    <a class="page-link" href="#" style="color: white !important;">
                         Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-                    </span>
+                    </a>
                 </li>
                 
                 {% if page_obj.has_next %}

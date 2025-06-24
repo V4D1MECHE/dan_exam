@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление навыками - {{ resume.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .skill-table-row {
+        transition: background-color 0.2s ease;
+    }
+    .skill-table-row:hover {
+        background-color: #f8f9fa;
+    }
+    .skill-table-row.selected {
+        background-color: #e3f2fd;
+    }
+    .search-box {
+        border-radius: 25px;
+        padding: 10px 20px;
+    }
+    .skill-badge {
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-gear text-primary me-2"></i>Управление навыками</h2>
+                    <p class="text-muted mb-0">Резюме: {{ resume.title }}</p>
+                </div>
+                <a href="{% url 'resume_detail_optimized' resume.pk %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Вернуться к резюме
+                </a>
+            </div>
+
+            <form method="post" id="skillsForm">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-list-check text-primary me-2"></i>
+                                    Выберите навыки для резюме
+                                </h5>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="search-container">
+                                    <input type="text" 
+                                           id="skillSearch" 
+                                           class="form-control search-box" 
+                                           placeholder="🔍 Поиск навыков..."
+                                           autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if form.fields %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="50">
+                                                <input type="checkbox" id="selectAll" class="form-check-input">
+                                            </th>
+                                            <th>Навык</th>
+                                            <th width="120">Категория</th>
+                                            <th width="80">Цвет</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="skillsTableBody">
+                                        {% for field in form %}
+                                            {% if field.field.skill_name %}
+                                                <tr class="skill-table-row" data-skill-name="{{ field.field.skill_name|lower }}">
+                                                    <td>
+                                                        <div class="form-check">
+                                                            {{ field }}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <label for="{{ field.id_for_label }}" class="form-label mb-0 fw-semibold">
+                                                            {{ field.field.skill_name }}
+                                                        </label>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge skill-badge text-dark bg-light">
+                                                            Навык
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge" 
+                                                              style="background-color: {{ field.field.skill_color }}; color: white; width: 60px;">
+                                                            &nbsp;
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="p-3 border-top">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Совет:</strong> Используйте поиск для быстрого нахождения нужных навыков. 
+                                    Отмеченные навыки будут добавлены в резюме.
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-list-check display-4 text-muted"></i>
+                                <h6 class="mt-3 text-muted">Нет доступных навыков</h6>
+                                <p class="text-muted">Добавьте навыки через форму создания/редактирования резюме.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.fields %}
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <span id="selectedCount">0</span> навыков выбрано
+                            </span>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Сохранить навыки
+                                </button>
+                                <a href="{% url 'resume_detail_optimized' resume.pk %}" class="btn btn-secondary">
+                                    Отмена
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('skillSearch');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const tableRows = document.querySelectorAll('.skill-table-row');
+    
+    // Функция подсчета выбранных навыков
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('#skillsTableBody input[type="checkbox"]:checked');
+        selectedCountSpan.textContent = checkedBoxes.length;
+    }
+    
+    // Поиск по таблице
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        tableRows.forEach(row => {
+            const skillName = row.dataset.skillName;
+            if (skillName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Выбрать все / снять все
+    selectAllCheckbox.addEventListener('change', function() {
+        const visibleCheckboxes = Array.from(tableRows)
+            .filter(row => row.style.display !== 'none')
+            .map(row => row.querySelector('input[type="checkbox"]'));
+            
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+            updateRowState(checkbox.closest('tr'), checkbox.checked);
+        });
+        
+        updateSelectedCount();
+    });
+    
+    // Функция обновления состояния строки
+    function updateRowState(row, isSelected) {
+        if (isSelected) {
+            row.classList.add('selected');
+        } else {
+            row.classList.remove('selected');
+        }
+    }
+    
+    // Обработка кликов на строки таблицы
+    tableRows.forEach(row => {
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        
+        // Устанавливаем начальное состояние
+        updateRowState(row, checkbox.checked);
+        
+        // Клик на строку (кроме чекбокса)
+        row.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox' && !e.target.closest('label')) {
+                checkbox.checked = !checkbox.checked;
+                updateRowState(row, checkbox.checked);
+                updateSelectedCount();
+            }
+        });
+        
+        // Изменение чекбокса
+        checkbox.addEventListener('change', function() {
+            updateRowState(row, this.checked);
+            updateSelectedCount();
+            
+            // Обновляем состояние "Выбрать все"
+            const allVisibleCheckboxes = Array.from(tableRows)
+                .filter(r => r.style.display !== 'none')
+                .map(r => r.querySelector('input[type="checkbox"]'));
+            
+            const allChecked = allVisibleCheckboxes.every(cb => cb.checked);
+            const noneChecked = allVisibleCheckboxes.every(cb => !cb.checked);
+            
+            if (allChecked) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (noneChecked) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        });
+    });
+    
+    // Инициализация счетчика
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

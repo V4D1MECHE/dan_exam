@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-#7(#wy(c79__)e)g&_fz)1co$v+msxn!zlxtde=uj&adk_9$cs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     
     # Third party apps
     'debug_toolbar',
+    'rest_framework',
     
     # Local apps
     'apps.users',
@@ -57,6 +58,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Django Debug Toolbar
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # Custom middleware для редиректа на главную
+    'karrton.middleware.RedirectToHomeMiddleware',
 ]
 
 ROOT_URLCONF = 'karrton.urls'
@@ -141,6 +144,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# Login/Logout redirects
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Django Debug Toolbar settings
 INTERNAL_IPS = [

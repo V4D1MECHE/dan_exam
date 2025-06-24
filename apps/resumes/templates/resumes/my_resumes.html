@@ -3,22 +3,25 @@
 
 {% block title %}Мои резюме{% endblock %}
 
+
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>Мои резюме</h1>
-                <a href="{% url 'resume_create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Создать резюме
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'resume_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Создать резюме
+                    </a>
+                </div>
             </div>
 
             {% if resumes %}
                 <div class="row">
                     {% for resume in resumes %}
                         <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm">
+                            <div class="card h-100 shadow-sm clickable-card" data-url="{% url 'resume_detail' resume.pk %}">
                                 {% if resume.photo %}
                                     <img src="{{ resume.photo.url }}" class="card-img-top" alt="Фото" style="height: 200px; object-fit: cover;">
                                 {% else %}
@@ -39,12 +42,11 @@
                                     {% if resume.salary_from %}
                                         <div class="mb-2">
                                             <small class="text-success">
-                                                <i class="bi bi-currency-dollar"></i>
                                                 {{ resume.salary_from|floatformat:0 }}
                                                 {% if resume.salary_to %}
                                                     - {{ resume.salary_to|floatformat:0 }}
                                                 {% endif %}
-                                                {{ resume.get_currency_display }}
+                                                {{ resume.get_currency_symbol }}
                                             </small>
                                         </div>
                                     {% endif %}
@@ -64,9 +66,6 @@
                                         </div>
                                         
                                         <div class="btn-group w-100" role="group">
-                                            <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-outline-primary btn-sm">
-                                                <i class="bi bi-eye"></i> Просмотр
-                                            </a>
                                             <a href="{% url 'resume_update' resume.pk %}" class="btn btn-outline-secondary btn-sm">
                                                 <i class="bi bi-pencil"></i> Редактировать
                                             </a>
@@ -87,29 +86,27 @@
                         <ul class="pagination justify-content-center">
                             {% if resumes.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=1">Первая</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ resumes.previous_page_number }}">Предыдущая</a>
+                                    <a class="page-link" href="?page={{ resumes.previous_page_number }}">&laquo; Предыдущая</a>
                                 </li>
                             {% endif %}
 
                             <li class="page-item active">
-                                <span class="page-link">
-                                    Страница {{ resumes.number }} из {{ resumes.paginator.num_pages }}
-                                </span>
+                                <a class="page-link" href="#">{{ resumes.number }}</a>
                             </li>
 
                             {% if resumes.has_next %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ resumes.next_page_number }}">Следующая</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ resumes.paginator.num_pages }}">Последняя</a>
+                                    <a class="page-link" href="?page={{ resumes.next_page_number }}">Следующая &raquo;</a>
                                 </li>
                             {% endif %}
                         </ul>
                     </nav>
+                    
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Страница {{ resumes.number }} из {{ resumes.paginator.num_pages }}
+                        </small>
+                    </div>
                 {% endif %}
             {% else %}
                 <!-- Пустое состояние -->
@@ -158,4 +155,32 @@
         </div>
     </div>
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем обработчик клика для карточек
+    document.querySelectorAll('.clickable-card').forEach(function(card) {
+        card.style.cursor = 'pointer';
+        
+        card.addEventListener('click', function(e) {
+            // Проверяем, что клик не по кнопке
+            if (!e.target.closest('.btn')) {
+                window.location.href = this.dataset.url;
+            }
+        });
+        
+        // Добавляем hover эффект
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            this.style.transition = 'all 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
 {% endblock %}
